@@ -1,0 +1,164 @@
+{% extends 'pms/dashboard_base.html' %}
+
+{% block content %}
+
+
+<h1 class="mb-5">Register New Employee</h1>
+
+<form action="{% url 'registerEmployee' consoleName=consoleName %}" method="POST">
+    {% csrf_token %}
+    <div class="row ">
+        <div class="col-lg-6 col-md-6 col-12 mb-4">
+      
+                <label for="fname" class="form-label">First Name</label>
+                <input type="text" class="form-control" id="fname" name="fname" placeholder="First Name">
+         
+        </div>
+
+        <div class="col-lg-6 col-md-6 col-12 mb-4">
+           
+                <label for="lname" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lname" name="lname" placeholder="Last Name">
+             
+        </div>
+
+    </div>
+
+
+    <div class="mb-4">
+    <label for="username" class="form-label">Username</label>
+    <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+  </div>
+
+
+  <div class="row">
+
+    <div class="col-lg-6 col-md-6 col-12 mb-4">
+        <div class="mb-4">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" placeholder="Password">
+          </div>
+    </div>
+    <div class="col-lg-6 col-md-6 col-12 mb-4">
+        <div class="mb-4">
+            <label for="repassword" class="form-label">Re-type Password</label>
+            <input type="password" class="form-control" id="repassword" name="repassword" placeholder="Re-type Password">
+          </div>
+    </div>
+
+  </div>
+
+
+
+    <div class="mb-4">
+    <label for="repassword" class="form-label">User Type</label>
+    <select name="usertype"  onclick="changePermission()" id="userType" class="form-control">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+    </select>
+  </div>
+    
+    <div class="mb-4" id="permissionsDiv">
+        <h4 class="my-3">User Permissions</h4>
+        <div class="row">
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" name="production" value="production" id="production">
+        <label class="form-check-label mr-4" for="production">
+          Production Department
+        </label>
+            </div>
+
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" name="warehouse" value="warehouse" id="warehouse">
+        <label class="form-check-label mr-4" for="warehouse">
+          Warehouse Department
+        </label>
+            </div>
+
+
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" value="engineering" name="engineering" id="engineering">
+        <label class="form-check-label mr-4" for="engineering">
+        Engineering Department
+        </label>
+            </div>
+
+            
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" value="buffing" name="buffing" id="buffing">
+                <label class="form-check-label mr-4" for="buffing">
+                Buffing Department
+                </label>
+            </div>
+
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" name="plating" value="plating" id="plating">
+                <label class="form-check-label mr-4" for="plating">
+                Plating Department
+                </label>
+            </div>
+
+
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" name="sbuffing" value="sbuffing" id="sbuffing">
+                <label class="form-check-label mr-4" for="sbuffing">
+                4S Buffing Department
+                </label>        
+            </div>
+
+            <div class="col-auto mb-3">
+                <input class="form-check-input" type="checkbox" name="laquer" value="laquer" id="laquer">
+                <label class="form-check-label mr-4" for="laquer">
+                Laquer Department
+                </label>        
+            </div>
+
+
+            <div class="col-auto mb-3">
+ <input class="form-check-input" type="checkbox" name="packaging" value="packaging" id="packaging">
+        <label class="form-check-label mr-4" for="packaging">
+        Packaging Department
+        </label>
+            </div>
+
+        </div>
+
+        <h4 class="my-2">Status</h4>
+        <div class="mb-4">
+            <input class="form-check-input" type="checkbox" name="active" value="active" id="active" checked>
+        <label class="form-check-label mr-4" for="active">
+        Is Active
+        </label>
+          </div>
+
+  </div>
+
+  <div class="text-center mt-2">
+
+    <button type="submit" class="btn btn-primary btn-lg mr-5">Register</button>
+    <button type="reset" class="btn btn-danger btn-lg">Reset</button>
+
+  </div>
+
+</form>
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+    function changePermission(){
+        var userType = document.getElementById('userType').value
+        var permissionsDiv = document.getElementById('permissionsDiv')
+        if(userType == 'user'){
+            permissionsDiv.style.visibility = 'visible'
+
+        }
+        else if(userType == 'admin')
+        {
+            permissionsDiv.style.visibility = 'hidden'
+        }
+    }
+</script>
+
+{% endblock %}

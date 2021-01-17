@@ -1,0 +1,157 @@
+{% extends 'pms/base.html' %}
+{% load static %}
+{% block title %}Consoles{% endblock %}
+
+{% block css %}
+    <style>
+        html,body{
+            background:url("/static/pms/consoles_bg.jpg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            height: 100%;
+        }
+
+        .welcome-container{
+            font-family: 'Caveat', cursive;
+            }
+
+
+    </style>
+
+{% endblock %}
+
+{% block body %}
+
+    <div class="container text-center mt-5 welcome-container text-danger">
+        <h1 class="display-2">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h1>
+    </div>
+
+    <div class="container mt-5 text-center">
+        
+        <div class="row">
+            {% if request.user.is_superuser %}
+            <div class="col-sm-4 mt-5">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Administrator Console</h5>
+             
+                  <a href="{% url 'dashboard' consoleName='Admin' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            {% if request.user.is_superuser or production %}
+            <div class="col-sm-4 mt-5">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Production Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='Production' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if request.user.is_superuser or warehouse %}
+            <div class="col-sm-4 mt-5">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Warehouse Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='Warehouse' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if request.user.is_superuser or engineering %}
+
+            <div class="col-sm-4 mt-5">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Engineering Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='Engineering' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if request.user.is_superuser or buffing %}
+
+            <div class="col-sm-4 mt-5 ">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Buffing Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='Buffing' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+            
+            {% if request.user.is_superuser or plating %}
+
+            <div class="col-sm-4 mt-5 ">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Plating Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='Plating' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if request.user.is_superuser or sbuffing %}
+
+            <div class="col-sm-4 mt-5 ">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">4S Buffing Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='4S Buffing' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            
+
+            {% if request.user.is_superuser or laquer %}
+
+            <div class="col-sm-4 mt-5">
+              <div class="card">
+                <div class="card-body">
+                  <h5 class="card-title">Laquer Console</h5>
+                 
+                  <a href="{% url 'dashboard' consoleName='Laquer' %}" class="btn btn-success mt-4">Go to Console</a>
+                </div>
+              </div>
+            </div>
+            {% endif %}
+
+            {% if request.user.is_superuser or packaging %}
+
+            <div class="col-sm-4 mt-5">
+                <div class="card">
+                  <div class="card-body">
+                    <h5 class="card-title">Packaging Console</h5>
+                   
+                    <a href="{% url 'dashboard' consoleName='Packaging' %}" class="btn btn-success mt-4">Go to Console</a>
+                  </div>
+                </div>
+              </div>
+              {% endif %}
+
+          </div>
+
+
+
+          <a href="{% url 'logout' %}" class="btn btn-danger mt-5">Logout</a>
+
+    </div>
+
+
+
+{% endblock %}
