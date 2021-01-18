@@ -2,9 +2,12 @@ from django.shortcuts import redirect, render,HttpResponse
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
 from mainApp.models import UserData
-from django.contrib.auth.models import User
+from django.contrib.auth.models import Permission, User
+from datetime import datetime
 # Create your views here.
 def handleLogin(request):
+    if request.user.username:
+        return redirect('consoles')
     if request.method == 'POST':
         loginUsername = request.POST['loginUsername']
         loginPassword = request.POST['loginPassword']
@@ -152,3 +155,184 @@ def registerEmployee(request,consoleName):
         'consoleName':consoleName
     }
     return render(request,'pms/registration.html',context)
+
+
+def employeeDetails(request,consoleName):
+    userDetails = User.objects.filter(is_superuser=False).all()
+    userDepartmentDetails = UserData.objects.filter(user__is_superuser=False).all()
+
+    context = {
+        'userDetails':userDetails,
+        'consoleName':consoleName,
+        'userDepartmentDetails':userDepartmentDetails
+    }
+    return render(request,'pms/employee_details.html',context)
+
+def activateEmployeeDetails(request,empId,consoleName):
+    user = User.objects.filter(id=empId).first()
+    user.is_active = True
+    user.save()
+    return redirect('employeeDetails',consoleName=consoleName)
+
+def inActivateEmployeeDetails(request,empId,consoleName):
+
+    user = User.objects.filter(id=empId).first()
+    user.is_active = False
+    user.save()
+    return redirect('employeeDetails',consoleName=consoleName)
+
+
+def employeePermissions(request,consoleName,empId):
+    userDetails = UserData.objects.filter(user__id=empId).all()
+    user = User.objects.filter(id=empId).first()
+    userCurrentPermissions = []
+    for permission in userDetails:
+        userCurrentPermissions.append(permission.permission)
+    if request.method == 'POST':
+        production = request.POST.get('production')
+        warehouse = request.POST.get('warehouse')
+        plating = request.POST.get('plating')
+        buffing = request.POST.get('buffing')
+        sBuffing = request.POST.get('sbuffing')
+        packaging = request.POST.get('packaging')
+        engineering = request.POST.get('engineering')
+        laquer = request.POST.get('laquer')
+        try:
+            if(production=='production'):
+                if('Production' not in userCurrentPermissions):
+                    production_permission = UserData(user=user,permission="Production")
+                    production_permission.save()
+            else:
+                production_permission = UserData.objects.filter(permission='Production').filter(user=user).first()
+                production_permission.delete()
+        except:
+            pass
+
+        try:
+            if(warehouse=='warehouse'):
+                if('Warehouse' not in userCurrentPermissions):
+                    warehouse_permission = UserData(user=user,permission="Warehouse")
+                    warehouse_permission.save()
+            else:
+                warehouse_permission = UserData.objects.filter(permission='Warehouse').filter(user=user).first()
+                warehouse_permission.delete()
+        except:
+            pass
+        try:
+            if(plating=='plating'):
+                if('Plating' not in userCurrentPermissions):
+                    plating_permission = UserData(user=user,permission="Plating")
+                    plating_permission.save()
+            else:
+                plating_permission = UserData.objects.filter(permission='Plating').filter(user=user).first()
+                plating_permission.delete()
+        except:
+            pass
+
+        try:
+            if(buffing=='buffing'):
+                if('Buffing' not in userCurrentPermissions):
+                    buffing_permission = UserData(user=user,permission="Buffing")
+                    buffing_permission.save()
+            else:
+                buffing_permission = UserData.objects.filter(permission='Buffing').filter(user=user).first()
+                buffing_permission.delete()
+        except:
+            pass
+
+        try:
+            if(sBuffing=='sbuffing'):
+                if('4S Buffing' not in userCurrentPermissions):
+                    sbuffing_permission = UserData(user=user,permission="4S Buffing")
+                    sbuffing_permission.save()
+            else:
+                sbuffing_permission = UserData.objects.filter(permission='4S Buffing').filter(user=user).first()
+                sbuffing_permission.delete()
+        except:
+            pass
+
+        try:
+            if(packaging=='packaging'):
+                if('Packaging' not in userCurrentPermissions):
+                    packaging_permission = UserData(user=user,permission="Packaging")
+                    packaging_permission.save()
+            else:
+                packaging_permission = UserData.objects.filter(permission='Packaging').filter(user=user).first()
+                packaging_permission.delete()
+        except:
+            pass
+
+        try:
+            if(engineering=='engineering'):
+                if('Engineering' not in userCurrentPermissions):
+                    engineering_permission = UserData(user=user,permission="Engineering")
+                    engineering_permission.save()
+            else:
+                engineering_permission = UserData.objects.filter(permission='Engineering').filter(user=user).first()
+                engineering_permission.delete()
+        except:
+            pass
+        try:
+            if(laquer=='laquer'):
+                if('Laquer' not in userCurrentPermissions):
+                    laquer_permission = UserData(user=user,permission="Laquer")
+                    laquer_permission.save()
+            else:
+                laquer_permission = UserData.objects.filter(permission='Laquer').filter(user=user).first()
+                laquer_permission.delete()
+        except:
+            pass
+
+        return redirect('employeePermissions',consoleName=consoleName,empId=empId)
+
+    context = {
+        'consoleName':consoleName,
+        'empId':empId,
+        'userCurrentPermissions':userCurrentPermissions,
+        'user':user
+    }
+    return render(request,'pms/employee_permission.html',context)
+
+
+def employeeDetailsWithFilter(request,consoleName):
+    userInDepartment = []
+    filteredDepartmentName = ''
+    if(request.method=='POST'):
+        filteredDepartmentName = request.POST['departmentName']
+        fromDate = request.POST['from']
+        toDate = request.POST['to']
+        try:
+            
+            fromDate = datetime.strptime(fromDate, '%Y-%m-%d').date()
+            toDate = datetime.strptime(toDate, '%Y-%m-%d').date()
+        except:
+            pass
+        if not filteredDepartmentName == 'All':
+            try:
+                departmentNameFilter = User.objects.filter(date_joined__range=[fromDate,toDate]).all()
+            except:
+                departmentNameFilter = User.objects.all()
+
+            for user in departmentNameFilter:
+                userData = UserData.objects.filter(user=user).filter(permission=filteredDepartmentName).first()
+                if userData:
+                    userInDepartment.append(userData.user)
+           
+        else:
+            try:
+                userInDepartment = User.objects.filter(is_superuser=False).filter(date_joined__range=[fromDate,toDate]).all()
+            except:
+                userInDepartment = User.objects.filter(is_superuser=False).all()
+
+            userInDepartment = list(userInDepartment)
+            
+            
+    
+
+    context = {
+        'consoleName' : consoleName,
+        'departmentName':filteredDepartmentName,
+        'userDetails':userInDepartment
+    }
+    return render(request,'pms/employee_details.html',context)
+    

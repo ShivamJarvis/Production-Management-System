@@ -1,0 +1,143 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block employeeDetails %}active{% endblock %}
+
+{% block css %}
+
+{% endblock %}
+
+{% block content %}
+
+
+<h1 class="display-5">Employee Details</h1>
+<h4 class="mt-3">Employee ID : EMPID/00{{user.id}}</h4>
+<h4>Employee Name : {{user.first_name}} {{user.last_name}}</h4>
+{% if user.is_active %}
+<h4>Employee Status : Active</h4>
+{% else %}
+<h4>Employee Status : Not Active</h4>
+{% endif %}
+
+<div class="text-center">
+    <h1 class="my-4">User Permissions</h1>
+
+
+    <form action="{% url 'employeePermissions' consoleName=consoleName empId=user.id %}" method="POST">
+        {% csrf_token %}
+        <div class="row">
+
+        
+        <div class="col-auto mb-3">
+            {% if 'Production' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" name="production" value="production" id="production" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" name="production" value="production" id="production" >
+            {% endif %}
+    <label class="form-check-label mr-4" for="production">
+      Production Department
+    </label>
+        </div>
+
+        <div class="col-auto mb-3">
+            {% if 'Warehouse' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" name="warehouse" value="warehouse" id="warehouse" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" name="warehouse" value="warehouse" id="warehouse" >
+            {% endif %}
+    <label class="form-check-label mr-4" for="warehouse">
+        
+      Warehouse Department
+    </label>
+        </div>
+
+
+        <div class="col-auto mb-3">
+            {% if 'Engineering' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" value="engineering" name="engineering" id="engineering" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" value="engineering" name="engineering" id="engineering">
+            {% endif %}
+    <label class="form-check-label mr-4" for="engineering">
+    Engineering Department
+    </label>
+        </div>
+
+        
+        <div class="col-auto mb-3">
+            {% if 'Buffing' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" value="buffing" name="buffing" id="buffing" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" value="buffing" name="buffing" id="buffing">
+            {% endif %}
+            <label class="form-check-label mr-4" for="buffing">
+            Buffing Department
+            </label>
+        </div>
+
+        <div class="col-auto mb-3">
+            {% if 'Plating' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" name="plating" value="plating" id="plating" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" name="plating" value="plating" id="plating">
+            {% endif %}
+            <label class="form-check-label mr-4" for="plating">
+            Plating Department
+            </label>
+        </div>
+
+
+        <div class="col-auto mb-3">
+            {% if '4S Buffing' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" name="sbuffing" value="sbuffing" id="sbuffing" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" name="sbuffing" value="sbuffing" id="sbuffing">
+            {% endif %}
+            <label class="form-check-label mr-4" for="sbuffing">
+            4S Buffing Department
+            </label>        
+        </div>
+
+        <div class="col-auto mb-3">
+            {% if 'Laquer' in userCurrentPermissions %}
+            <input class="form-check-input" type="checkbox" name="laquer" value="laquer" id="laquer" checked>
+            {% else %}
+            <input class="form-check-input" type="checkbox" name="laquer" value="laquer" id="laquer">
+            {% endif %}
+            <label class="form-check-label mr-4" for="laquer">
+            Laquer Department
+            </label>        
+        </div>
+
+
+        <div class="col-auto mb-3">
+            {% if 'Packaging' in userCurrentPermissions %}
+<input class="form-check-input" type="checkbox" name="packaging" value="packaging" id="packaging" checked>
+{% else %}
+<input class="form-check-input" type="checkbox" name="packaging" value="packaging" id="packaging">
+{% endif %}
+
+    <label class="form-check-label mr-4" for="packaging">
+    Packaging Department
+    </label>
+        </div>
+    </div>
+
+    <button class="btn btn-primary btn-lg mr-5" type="submit">Update</button>
+    <a href="{% url 'employeeDetails' consoleName=consoleName %}" class="btn btn-lg btn-danger">Cancel</a> 
+
+    </form>
+
+
+</div>
+
+
+
+
+{% endblock %}
+
+
+
+
+{% block js %}
+
+
+{% endblock %}

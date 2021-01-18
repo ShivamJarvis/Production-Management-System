@@ -1,0 +1,176 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block employeeDetails %}active{% endblock %}
+
+{% block css %}
+
+<style>
+
+    .tableData{
+        font-weight: bold;
+    }
+
+</style>
+
+{% endblock %}
+
+{% block content %}
+
+
+<h1 class="mb-4">Employees List / Permissions</h1>
+
+    
+    <form action="{% url 'employeeDetailsWithFilter' consoleName=consoleName %}" method="POST" class="mb-4">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-auto mt-2">
+                <h5> <strong>Department Name</strong></h5>
+            </div>
+            <div class="col-auto">
+                <select name="departmentName" class='form-select' id="DepartmentName">
+                    {% if departmentName == 'All' %}
+                    <option value="All" selected>All</option>
+                    {% else %}
+                    <option value="All">All</option>
+                    {% endif %}
+                    {% if departmentName == 'Production' %}
+                    <option value="Production" selected>Production</option>
+                    {% else %}
+                    <option value="Production">Production</option>
+                    {% endif %}
+                    {% if departmentName == 'Warehouse' %}
+                    <option value="Warehouse" selected>Warehouse</option>
+                    {% else %}
+                    <option value="Warehouse" >Warehouse</option>
+                    {% endif %}
+
+                    {% if departmentName == 'Buffing' %}
+                    <option value="Buffing" selected>Buffing</option>
+                    {% else %}
+                    <option value="Buffing">Buffing</option>
+                    {% endif %}
+
+                    {% if departmentName == 'Plating' %}
+                    <option value="Plating" selected>Plating</option>
+                    {% else %}
+                    <option value="Plating">Plating</option>
+                    {% endif %}
+
+                    {% if departmentName == '4S Buffing' %}
+                    <option value="4S Buffing" selected>4S Buffing</option>
+                    {% else %}
+                    <option value="4S Buffing">4S Buffing</option>
+                    {% endif %}
+
+                    {% if departmentName == 'Laquer' %}
+                    <option value="Laquer" selected>Laquer</option>
+                    {% else %}
+                    <option value="Laquer">Laquer</option>
+                    {% endif %}
+                    {% if departmentName == 'Engineering' %}
+                    <option value="Engineering" selected>Engineering</option>
+                    {% else %}
+                    <option value="Engineering">Engineering</option>
+                    {% endif %}
+
+                    {% if departmentName == 'Packaging' %}
+                    <option value="Packaging" selected>Packaging</option>
+                    {% else %}
+                    <option value="Packaging">Packaging</option>
+                    {% endif %}
+
+                </select>
+            </div>
+           
+        </div>
+        
+        <div class="row my-1">
+
+            <div class="col-auto">
+                <h5 class="mt-2"><strong>Date of Joining</strong></h5>
+        
+            </div>
+            <div class="col-auto">
+                <h5 class="mt-2">From</h5>                 
+            </div>
+            <div class="col-auto">
+                <input type="date" id="from" name="from" class="form-control">
+            </div>
+            <div class="col-auto">
+                <h5 class="mt-2">To</h5>
+
+            </div>
+            <div class="col-auto">
+                <input type="date" id="to" name="to" class="form-control">
+            </div>
+            
+        </div>
+
+            <div class="col-auto">
+                <button type="submit" class="btn btn-info">Filter</button>
+            </div>
+
+    </form>
+
+
+
+<table class="table table-hover mt-4" id="employeeTable">
+    <thead>
+        <tr class="table-dark">
+          <th scope="col">Employee ID</th>
+          <th scope="col">Employee Name</th>
+          <th scope="col">Date of Joining</th>
+          <th scope="col">Employee Department</th>
+          <th scope="col">Status</th>
+          <th scope="col">Change Status</th>
+        </tr>
+      </thead>
+      <tbody>
+          {% for user in userDetails %}
+          {% if user.is_active %}
+        <tr class="table-success">
+          <td> <span class="tableData">EMPID/00{{user.id}}</span></td>
+          <td> <span class="tableData">{{user.first_name}} {{user.last_name}}</span></td>
+          <td> <span class="tableData">{{user.date_joined}}</span></td>
+          <td><a href="{% url 'employeePermissions' consoleName=consoleName empId=user.id %}" class="btn btn-primary">See / Edit Department Details</a></td>
+
+          <td> <span class="tableData">Active</span></td>
+          <td><a href="{% url 'inActivateEmployeeDetails' consoleName=consoleName empId=user.id %}" class="btn btn-danger">Inactivate</a></td>
+        </tr>
+
+        {% else %}
+        <tr class="table-danger">
+            <td> <span class="tableData">EMPID/00{{user.id}}</span></td>
+            <td> <span class="tableData">{{user.first_name}} {{user.last_name}}</span></td>
+            <td> <span class="tableData">{{user.date_joined}}</span></td>
+            <td><a href="{% url 'employeePermissions' consoleName=consoleName empId=user.id %}" class="btn btn-info">See / Edit Department Details</a></td>
+            <td> <span class="tableData">Not Active</span></td>
+            <td><a href="{% url 'activateEmployeeDetails' consoleName=consoleName empId=user.id %}" class="btn btn-success">Activate</a></td>
+      
+          </tr>
+
+
+        {% endif %}
+        {% endfor %}
+      
+      </tbody>
+  </table>
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+
+$(document).ready( function () {
+    $('#employeeTable').DataTable();
+    });
+
+    
+    var forDate = document.getElementById('for').value
+    var toDate = document.getElementById('to')
+    todate.min = forDate
+    
+
+</script>
+
+{% endblock %}
