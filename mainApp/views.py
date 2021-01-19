@@ -76,6 +76,11 @@ def consoles(request):
 
 @login_required(login_url='login')
 def dashboard(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     context = {
         'consoleName':consoleName
     }
@@ -83,6 +88,11 @@ def dashboard(request,consoleName):
 
 @login_required(login_url='login')
 def registerEmployee(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     if(not request.user.is_superuser):
         return redirect('consoles')
     if(request.method == 'POST'):
@@ -109,13 +119,13 @@ def registerEmployee(request,consoleName):
                 is_active = False
 
             is_admin = False
-            if userType == 'user':
-                is_admin = False
-            elif userType == 'admin':
+            is_staff = False
+            if not userType == 'user':
                 is_admin = True
+                is_staff = True
             
 
-            newUser = User.objects.create_user(first_name=firstName,last_name=lastName,username=userName,is_active=is_active,password=password,is_superuser=is_admin)
+            newUser = User.objects.create_user(first_name=firstName,last_name=lastName,username=userName,is_active=is_active,is_staff=is_staff,password=password,is_superuser=is_admin)
 
             if(production=='production'):
                 production_permission = UserData(user=newUser,permission="Production")
@@ -157,7 +167,13 @@ def registerEmployee(request,consoleName):
     return render(request,'pms/registration.html',context)
 
 
+@login_required(login_url='login')
 def employeeDetails(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     userDetails = User.objects.filter(is_superuser=False).all()
     userDepartmentDetails = UserData.objects.filter(user__is_superuser=False).all()
 
@@ -168,21 +184,40 @@ def employeeDetails(request,consoleName):
     }
     return render(request,'pms/employee_details.html',context)
 
+
+@login_required(login_url='login')
 def activateEmployeeDetails(request,empId,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     user = User.objects.filter(id=empId).first()
     user.is_active = True
     user.save()
     return redirect('employeeDetails',consoleName=consoleName)
 
-def inActivateEmployeeDetails(request,empId,consoleName):
 
+@login_required(login_url='login')
+def inActivateEmployeeDetails(request,empId,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     user = User.objects.filter(id=empId).first()
     user.is_active = False
     user.save()
     return redirect('employeeDetails',consoleName=consoleName)
 
 
+@login_required(login_url='login')
 def employeePermissions(request,consoleName,empId):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     userDetails = UserData.objects.filter(user__id=empId).all()
     user = User.objects.filter(id=empId).first()
     userCurrentPermissions = []
@@ -294,7 +329,13 @@ def employeePermissions(request,consoleName,empId):
     return render(request,'pms/employee_permission.html',context)
 
 
+@login_required(login_url='login')
 def employeeDetailsWithFilter(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     userInDepartment = []
     filteredDepartmentName = ''
     if(request.method=='POST'):
@@ -335,4 +376,43 @@ def employeeDetailsWithFilter(request,consoleName):
         'userDetails':userInDepartment
     }
     return render(request,'pms/employee_details.html',context)
-    
+
+@login_required(login_url='login')
+def orderSummary(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
+    context = {
+        'consoleName':consoleName
+    }
+    return render(request,'pms/order_summary.html',context)
+
+
+@login_required(login_url='login')
+def provisionalSchedule(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
+    context = {
+        'consoleName':consoleName
+    }
+    return render(request,'pms/provisional_schedule.html',context)
+
+
+
+@login_required(login_url='login')
+def orderHistory(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
+    context = {
+        'consoleName':consoleName
+    }
+    return render(request,'pms/order_history.html',context)
+

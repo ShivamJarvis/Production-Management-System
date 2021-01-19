@@ -24,11 +24,25 @@
 
     </div>
 
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-12">
+            <div class="mb-4">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+          </div>
+        </div>
 
-    <div class="mb-4">
-    <label for="username" class="form-label">Username</label>
-    <input type="text" class="form-control" id="username" name="username" placeholder="Username">
+        <div class="col-lg-6 col-md-6 col-12">
+ <div class="mb-4">
+    <label for="repassword" class="form-label">User Type</label>
+    <select name="usertype"  onclick="changePermission()" id="userType" class="form-control">
+    <option value="user">User</option>
+    <option value="admin">Admin</option>
+    </select>
   </div>
+        </div>
+
+    </div>
 
 
   <div class="row">
@@ -50,13 +64,7 @@
 
 
 
-    <div class="mb-4">
-    <label for="repassword" class="form-label">User Type</label>
-    <select name="usertype"  onclick="changePermission()" id="userType" class="form-control">
-    <option value="user">User</option>
-    <option value="admin">Admin</option>
-    </select>
-  </div>
+   
     
     <div class="mb-4" id="permissionsDiv">
         <h4 class="my-3">User Permissions</h4>

@@ -50,6 +50,29 @@
 					</li>
 					{% endif %}
 
+					{% if consoleName == 'Production' %}
+
+					<li class="sidebar-item {% block order_summary %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'orderSummary' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Order Summary</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item {% block provisional_schedule %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'provisionalSchedule' consoleName=consoleName %}">
+							<i class="fas fa-hourglass-end"></i> <span class="align-middle">Provisional Schedule</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item {% block order_history %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'orderHistory' consoleName=consoleName %}">
+							<i class="fas fa-history"></i> <span class="align-middle">Order History</span>
+						</a>
+					</li>
+
+
+					{% endif %}
+
 
 				
 

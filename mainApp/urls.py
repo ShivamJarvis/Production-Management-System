@@ -18,5 +18,11 @@ urlpatterns = [
     # For Change the User/Employee Permission
     path('dashboard/<consoleName>/employee/<int:empId>/permissions/',views.employeePermissions,name='employeePermissions'),
 
+    # For Production Console
+    path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
+    path('dashboard/<consoleName>/provisional/schedule/',views.provisionalSchedule,name='provisionalSchedule'),
+    path('dashboard/<consoleName>/order/history/',views.orderHistory,name='orderHistory'),
+
+
 
 ]
