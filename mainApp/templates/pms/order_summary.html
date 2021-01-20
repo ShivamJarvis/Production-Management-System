@@ -8,13 +8,142 @@
 
 {% block content %}
 
+<h1 class="mb-4">Order Summary</h1>
+<div class="some-buttons">
+    <!-- Order Upload Button -->
+    <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#OrderModal">
+    Upload Orders
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="OrderModal" tabindex="-1" aria-labelledby="OrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="OrderModalLabel">Upload Orders File</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h3>
+              <form action="{% url 'orderUpload' consoleName=consoleName %}" method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload Order File in Excel Format</label>
+                    <input class="form-control" name="order_file" type="file" id="formFile">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Upload</button>
+              </form>
+          </h3>
+        </div>
+        <div class="modal-footer">
+
+          <a href="" class="btn btn-danger">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Order Upload Button End -->
+   
+  
+  <!-- Invoice Upload Button -->
+    <!-- Button trigger modal -->
+<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#InvoiceModal">
+    Upload Invoice
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="InvoiceModal" tabindex="-1" aria-labelledby="InvoiceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="InvoiceModalLabel">Upload Invoice File</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h3>
+              <form action="" method="POST">
+                  {% csrf_token %}
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload Invoice File in Excel Format</label>
+                    <input class="form-control" name="invoice_file" type="file" id="formFile">
+                  </div>
+              </form>
+          </h3>
+        </div>
+        <div class="modal-footer">
+
+          <a href="" class="btn btn-primary">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Invoice Upload Button End -->
 
 
+
+</div>
+<div class="mt-4">
+<table class="table table-hover mt-4" id="orderSummaryTable">
+    <thead>
+        <tr class="table-dark">
+          <th scope="col">
+
+          </th>
+          <th scope="col">Order Type</th>
+          <th scope="col">Sales Order Number</th>
+          <th scope="col">Customer Name</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Order Quantity</th>
+          <th scope="col">Order Date</th>
+          <th scope="col">Delivery Date</th>
+          <th scope="col">Status</th>
+          <th scope="col">See Order Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in orderData %}
+        <tr class="table-success">
+          <td> <span class="tableData">
+              <form action="" method="POST">
+                  {% csrf_token %}
+              <input type="checkbox" class="form-check-input" value="{{data.id}}">
+          </form></td>
+          <td> <span class="tableData">{{data.order_type}}</span></td>
+          <td> <span class="tableData">{{data.sales_order}}</span></td>
+          <td><span class="tableData">{{data.customer_name}}</span></td>
+
+          <td> <span class="tableData">{{data.item_code}}</span></td>
+          <td><span class="tableData">{{data.order_qty}}</span></td>
+          <td><span class="tableData">{{data.order_date}}</span></td>
+          <td><span class="tableData">{{data.item_delivery_date}}</span></td>
+          <td><span class="tableData">{{data.status}}</span></td>
+          <td><a href="" class="btn btn-info">See Order Details</a></td>
+  
+        </tr>
+
+      {% endfor %}
+      
+      </tbody>
+  </table>
+</div>
 
 {% endblock %}
 
 {% block js %}
 
+<script>
 
+$(document).ready( function () {
+    $('#orderSummaryTable').DataTable();
+    });
+
+    
+    var forDate = document.getElementById('for').value
+    var toDate = document.getElementById('to')
+    todate.min = forDate
+    
+
+</script>
 
 {% endblock %}

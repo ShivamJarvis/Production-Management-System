@@ -1,7 +1,11 @@
 from django.shortcuts import redirect, render,HttpResponse
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
-from mainApp.models import UserData
+from numpy.core.numeric import NaN
+from pandas.io import excel
+from mainApp.models import Inventory, Order, UserData
+import pandas as pd
+import xlwt
 from django.contrib.auth.models import Permission, User
 from datetime import datetime
 # Create your views here.
@@ -384,8 +388,12 @@ def orderSummary(request,consoleName):
     for user in userData:
         if not user.permission == consoleName:
             return redirect('consoles')
+    
+    orderData = Order.objects.all()
+
     context = {
-        'consoleName':consoleName
+        'consoleName':consoleName,
+        'orderData':orderData
     }
     return render(request,'pms/order_summary.html',context)
 
@@ -415,4 +423,86 @@ def orderHistory(request,consoleName):
         'consoleName':consoleName
     }
     return render(request,'pms/order_history.html',context)
+
+
+def orderUpload(request,consoleName):
+    if request.method == 'POST':
+        orderFile = request.FILES['order_file']
+        if orderFile:
+            data = pd.read_excel(orderFile,engine='openpyxl')
+            data['Direct Orders'] = data['Direct Orders'].fillna('Others')
+            lenOfData = len(data)
+            for i in range(0,lenOfData):
+                orderType = data['Direct Orders'][i]
+                salesOrderNo = data['Sales Order'][i]
+                customerName = data['Customer'][i]
+                orderDate = data['Date'][i]
+                description = data['Description'][i]
+                itemCode = data['Item'][i]
+                deliveryDate = data['Item Delivery Date'][i]
+                orderQuantity = data['Qty'][i]
+                newOrder = Order(order_type=orderType,sales_order=salesOrderNo,customer_name=customerName,order_date=orderDate,item_code=itemCode,item_delivery_date=deliveryDate,order_qty=orderQuantity,description=description,status='Pending')
+                newOrder.save()
+            
+    return redirect('orderSummary',consoleName)
+
+def warehouseInventory(request,consoleName):
+
+    inventoryData = Inventory.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'inventoryData':inventoryData
+    }
+    return render(request,'pms/warehouse_inventory.html',context)
+
+def warehouseInventoryUpload(request,consoleName):
+    if request.method == 'POST':
+        orderFile = request.FILES['order_file']
+        if orderFile:
+            data = pd.read_excel(orderFile,engine='openpyxl')
+            data['Opening Quantity'] = data['Opening Quantity'].fillna(0)
+            data['Added Quantity'] = data['Added Quantity'].fillna(0)
+            data['Issued / Dispatched'] = data['Issued / Dispatched'].fillna(0)
+            data['Balance Quantity'] = data['Balance Quantity'].fillna(0)
+            lenOfData = len(data)
+            for i in range(0,lenOfData):
+                try:
+                    itemCode = data['Item'][i]
+                    openingQty = data['Opening Quantity'][i]
+                    addedQty = data['Added Quantity'][i]
+                    issuedQty = data['Issued / Dispatched'][i]
+                    balanceQty = data['Balance Quantity'][i]
+                    item = Inventory(item_code=itemCode,opening_qty=openingQty,added_qty=addedQty,issued_dispatched_qty=issuedQty,balanced_qty=balanceQty)
+                    item.save()
+                except:
+                    itemCode = data['Item'][i]
+                    print(itemCode)
+    context = {
+        'consoleName':consoleName
+    }
+    return redirect('warehouseInventory',consoleName)
+
+def exportInventoryExcel(request):
+    response = HttpResponse(content_type='text/ms-excel')
+    response['Content-Disposition'] = 'attachment; filename="inventory.xls"'
+    wb = xlwt.Workbook(encoding='utf-8')
+    ws = wb.add_sheet('Sheet 1')
+    row_num=0
+    font_style = xlwt.XFStyle()
+    font_style.font.bold = False
+    writer = excel.ExcelWriter(response)
+    
+    columns = ['Item','Opening Quantity','Added Quantity','Issued / Dispatched','Balance Quantity']
+    for col_num in range(len(columns)):
+        ws.write(row_num,col_num,columns[col_num],font_style)
+    
+
+
+    allData = Inventory.objects.all().values_list('item_code','opening_qty','added_qty','issued_dispatched_qty','balanced_qty')
+    for data in allData:
+        row_num += 1
+        for col_num in range(len(data)):
+            ws.write(row_num,col_num,data[col_num],font_style)
+    wb.save(response)
+    return response
 

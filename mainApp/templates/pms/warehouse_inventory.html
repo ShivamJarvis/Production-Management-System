@@ -1,0 +1,94 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block warehouse_inventory %}active{% endblock %}
+
+{% block css %}
+
+
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Inventory</h1>
+<div class="some-buttons">
+    <!-- Order Upload Button -->
+    <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#OrderModal">
+    Upload Inventory
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="OrderModal" tabindex="-1" aria-labelledby="OrderModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="OrderModalLabel">Upload Inventory File</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h3>
+              <form action="{% url 'warehouseInventoryUpload' consoleName=consoleName %}" method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload Inventory File in Excel Format</label>
+                    <input class="form-control" name="order_file" type="file" id="formFile">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Upload</button>
+              </form>
+          </h3>
+        </div>
+        <div class="modal-footer">
+
+          <a href="" class="btn btn-danger">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Order Upload Button End -->
+
+
+  <a href="{% url 'exportInventoryExcel' %}" class="btn btn-info">Export Excel</a>
+
+</div>
+<div class="mt-4">
+<table class="table table-hover mt-4" id="inventoryTable">
+    <thead>
+        <tr class="table-dark">
+          <th scope="col">Item Code</th>
+          <th scope="col">Opening Quantity</th>
+          <th scope="col">Added Quantity</th>
+          <th scope="col">Issued/Dispatched Quantity</th>
+          <th scope="col">Balance Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in inventoryData %}
+        <tr class="table-info">
+         
+          <td> <span class="tableData">{{data.item_code}}</span></td>
+          <td> <span class="tableData">{{data.opening_qty}}</span></td>
+          <td><span class="tableData">{{data.added_qty}}</span></td>
+          <td> <span class="tableData">{{data.issued_dispatched_qty}}</span></td>
+          <td><span class="tableData">{{data.balanced_qty}}</span></td>
+          
+  
+        </tr>
+
+      {% endfor %}
+      
+      </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+
+$(document).ready( function () {
+    $('#inventoryTable').DataTable( {
+    });
+    } );
+</script>
+
+{% endblock %}

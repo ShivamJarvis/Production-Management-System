@@ -22,6 +22,15 @@ urlpatterns = [
     path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
     path('dashboard/<consoleName>/provisional/schedule/',views.provisionalSchedule,name='provisionalSchedule'),
     path('dashboard/<consoleName>/order/history/',views.orderHistory,name='orderHistory'),
+    # For Order File Upload
+    path('dashboard/<consoleName>/order/upload/',views.orderUpload,name='orderUpload'),
+
+     # For Warehouse Console
+    path('dashboard/<consoleName>/inventory/details/',views.warehouseInventory,name='warehouseInventory'),
+    path('dashboard/<consoleName>/inventory/upload/',views.warehouseInventoryUpload,name='warehouseInventoryUpload'),
+    path('export/excel/', views.exportInventoryExcel,name='exportInventoryExcel'),
+
+
 
 
 
