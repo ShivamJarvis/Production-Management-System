@@ -1,7 +1,9 @@
 from django.contrib import admin
-from mainApp.models import UserData,Order,Inventory
+from mainApp.models import StockRequirement, Supplier, UserData,Order,Inventory
 # Register your models here.
 
 admin.site.register(UserData)
 admin.site.register(Order)
 admin.site.register(Inventory)
+admin.site.register(StockRequirement)
+admin.site.register(Supplier)

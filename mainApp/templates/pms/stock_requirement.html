@@ -1,0 +1,204 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block warehouse_stock_requirement %}active{% endblock %}
+
+{% block css %}
+
+
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Stock Requirement</h1>
+<div class="some-buttons">
+    <!-- Order Upload Button -->
+    <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#InventoryModal">
+    Upload Recieved Stock
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="InventoryModal" tabindex="-1" aria-labelledby="InventoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="InventoryModalLabel">Upload Recieved Stock File</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <h3>
+              <form action="{% url 'warehouseInventoryUpload' consoleName=consoleName %}" method="POST" enctype="multipart/form-data">
+                  {% csrf_token %}
+                <div class="mb-3">
+                    <label for="formFile" class="form-label">Upload Recieved Stock in Excel Format</label>
+                    <input class="form-control" name="inventory_file" type="file" id="formFile">
+                  </div>
+                  <button type="submit" class="btn btn-primary">Upload</button>
+              </form>
+          </h3>
+        </div>
+        <div class="modal-footer">
+
+          <a href="" class="btn btn-danger">Cancel</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Order Upload Button End -->
+  <a href="{% url 'exportStockExcel' %}" class="btn btn-info">Export Excel</a>
+
+
+  
+
+</div>
+<div class="mt-4">
+<table class="table table-hover mt-4" id="inventoryTable">
+    <thead>
+        <tr class="table-dark">
+          <th scope="col">Customer Name</th>
+          <th scope="col">Sales Order No.</th>
+          <th scope="col">Date of Order</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Order Qty</th>
+          <th scope="col">Supplier Name</th>
+          <th scope="col">Required Qty</th>
+          <th scope="col">Recieved Qty</th>
+          <th scope="col"></th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in stockDetails %}
+        <tr class="table-info">
+         
+          <td> <span class="tableData">{{data.order.customer_name}}</span></td>
+          <td> <span class="tableData">{{data.order.sales_order}}</span></td>
+          <td><span class="tableData">{{data.order.order_date}}</span></td>
+          <td> <span class="tableData">{{data.order.item_code}}</span></td>
+          <td><span class="tableData">{{data.order.order_qty}}</span></td>
+          {% if data.supplier_name %}
+          <td><span class="tableData">{{data.supplier_name}}</span></td>
+          {% else %}
+          <td><span class="tableData">-</span></td>
+        {% endif %}
+          <td><span class="tableData">{{data.required_qty}}</span></td>
+
+          <td><span class="tableData">{{data.recieved_qty}}</span></td>
+          <td><span class="tableData">
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#Modal{{data.id}}">
+    Update
+  </button>
+  <!-- Modal -->
+  <div class="modal fade" id="Modal{{data.id}}" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="ModalLabel{{data.id}}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="ModalLabel{{data.id}}">For : {{data.order.customer_name}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <strong>Item Code : {{data.order.item_code}}</strong>
+          <form action="{%url 'updateStockRequirement' consoleName=consoleName %}" method="POST" class="mt-4">
+            {% csrf_token %}
+            <input type="hidden" value="{{data.id}}" name="id">
+            <div class="my-3">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        Estimated Delivery Date
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <input type="date" name="estimate_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="my-3">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        Actual Delivery Date
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <input type="date" name="actual_date" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="my-3">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        Supplier Name
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <select name="supplier_name" class="form-control">
+                            {% for supplier in suppliers %}
+                            <option value="{{supplier.name}}">{{supplier.name}}</option>
+                            {% endfor %}
+                            
+
+                        </select>
+                    </div>
+                </div>
+
+            <div class="my-3">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        Quantity Recieved
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <input type="number" name="qty_recieved" class="form-control" value="0" min="0" max="{{data.required_qty}}">
+                    </div>
+                </div>
+            </div>
+
+            <div class="my-3">
+                <div class="row">
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        P.O. Number
+                    </div>
+                    <div class="col-lg-6 col-md-6 col-sm-12">
+                        <input type="text" name="po_num" class="form-control" >
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Update</button>
+
+           
+
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+          </span></td>
+          <td><span class="tableData"><a href="" class="btn btn-primary">See Complete Details</a></span></td>
+          
+  
+        </tr>
+
+      {% endfor %}
+      
+      </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+
+$(document).ready( function () {
+    $('#inventoryTable').DataTable( {
+    });
+    } );
+</script>
+
+{% endblock %}

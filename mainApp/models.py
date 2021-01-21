@@ -65,11 +65,27 @@ class Inventory(models.Model):
     def __str__(self):
         return self.item_code
 
-    
+class StockRequirement(models.Model):
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='OrderDetails')
+    vendor_name = models.CharField(max_length=400,null=True,blank=True)
+    required_qty = models.IntegerField(null=True,blank=True)
+    stock_category = models.CharField(max_length=500,null=True,blank=True)
+    po_number = models.CharField(max_length=300,null=True,blank=True)
+    supplier_name = models.CharField(max_length=500,null=True,blank=True)
+    stock_inward_estimate_date = models.DateField(null=True,blank=True)
+    latest_stock_inward_actual_date = models.DateField(null=True,blank=True)
+    recieved_qty = models.IntegerField(null=True,blank=True)
+    pending_qty = models.IntegerField(null=True,blank=True)
+    def __str__(self):
+        return self.order.customer_name
 
+class Supplier(models.Model):
+    name = models.CharField(max_length=200)
+    address = models.CharField(max_length=500, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
+    email = models.CharField(max_length=200, null=True, blank=True)
+    gst_no = models.CharField(max_length=200, null=True, blank=True)
+    pan_no = models.CharField(max_length=200, null=True, blank=True)
+    def __str__(self):
+        return self.name
 
-
-    
-
-
-    

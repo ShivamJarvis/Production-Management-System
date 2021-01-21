@@ -1,11 +1,16 @@
+from io import BytesIO, StringIO
 from django.shortcuts import redirect, render,HttpResponse
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
 from numpy.core.numeric import NaN
+from pandas import io
 from pandas.io import excel
-from mainApp.models import Inventory, Order, UserData
+from mainApp import models
+from mainApp.models import Inventory, Order, Supplier, UserData, StockRequirement
 import pandas as pd
 import xlwt
+import xlsxwriter
+from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import Permission, User
 from datetime import datetime
 # Create your views here.
@@ -425,11 +430,19 @@ def orderHistory(request,consoleName):
     return render(request,'pms/order_history.html',context)
 
 
+@login_required(login_url='login')
 def orderUpload(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     if request.method == 'POST':
         orderFile = request.FILES['order_file']
+        fs = FileSystemStorage()
+        filename = fs.save(orderFile.name,orderFile)        
         if orderFile:
-            data = pd.read_excel(orderFile,engine='openpyxl')
+            data = pd.read_excel('media/'+orderFile.name,engine='openpyxl')
             data['Direct Orders'] = data['Direct Orders'].fillna('Others')
             lenOfData = len(data)
             for i in range(0,lenOfData):
@@ -443,11 +456,34 @@ def orderUpload(request,consoleName):
                 orderQuantity = data['Qty'][i]
                 newOrder = Order(order_type=orderType,sales_order=salesOrderNo,customer_name=customerName,order_date=orderDate,item_code=itemCode,item_delivery_date=deliveryDate,order_qty=orderQuantity,description=description,status='Pending')
                 newOrder.save()
-            
+        
+                inventory = Inventory.objects.filter(item_code = itemCode).first()
+                if inventory:
+                    requiredQty = inventory.balanced_qty - orderQuantity
+                    if requiredQty<0:
+                        stockRequirement = StockRequirement.objects.filter(order__item_code=itemCode).first()
+                        if stockRequirement:
+                            newStockRequirement = StockRequirement(order=newOrder,required_qty= orderQuantity, pending_qty = orderQuantity,recieved_qty=0)
+                            newStockRequirement.save()
+                        else:
+                            requiredQty = (inventory.balanced_qty - orderQuantity) * (-1)
+                            newStockRequirement = StockRequirement(order=newOrder,required_qty= requiredQty, pending_qty = requiredQty,recieved_qty=0)
+                            newStockRequirement.save()
+                else:
+                    inventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,balanced_qty=0)
+                    inventory.save()
+                    newStockRequirement = StockRequirement(order=newOrder,required_qty= orderQuantity, pending_qty = orderQuantity,recieved_qty=0)
+                    newStockRequirement.save()
     return redirect('orderSummary',consoleName)
 
-def warehouseInventory(request,consoleName):
 
+@login_required(login_url='login')
+def warehouseInventory(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     inventoryData = Inventory.objects.all()
     context = {
         'consoleName':consoleName,
@@ -455,11 +491,19 @@ def warehouseInventory(request,consoleName):
     }
     return render(request,'pms/warehouse_inventory.html',context)
 
+@login_required(login_url='login')
 def warehouseInventoryUpload(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
     if request.method == 'POST':
-        orderFile = request.FILES['order_file']
-        if orderFile:
-            data = pd.read_excel(orderFile,engine='openpyxl')
+        inventoryFile = request.FILES['inventory_file']
+        fs = FileSystemStorage()
+        filename = fs.save(inventoryFile.name,inventoryFile)
+        if inventoryFile:
+            data = pd.read_excel('media/'+inventoryFile.name,engine='openpyxl')
             data['Opening Quantity'] = data['Opening Quantity'].fillna(0)
             data['Added Quantity'] = data['Added Quantity'].fillna(0)
             data['Issued / Dispatched'] = data['Issued / Dispatched'].fillna(0)
@@ -482,27 +526,148 @@ def warehouseInventoryUpload(request,consoleName):
     }
     return redirect('warehouseInventory',consoleName)
 
+@login_required(login_url='login')
 def exportInventoryExcel(request):
-    response = HttpResponse(content_type='text/ms-excel')
-    response['Content-Disposition'] = 'attachment; filename="inventory.xls"'
-    wb = xlwt.Workbook(encoding='utf-8')
-    ws = wb.add_sheet('Sheet 1')
-    row_num=0
-    font_style = xlwt.XFStyle()
-    font_style.font.bold = False
-    writer = excel.ExcelWriter(response)
-    
-    columns = ['Item','Opening Quantity','Added Quantity','Issued / Dispatched','Balance Quantity']
-    for col_num in range(len(columns)):
-        ws.write(row_num,col_num,columns[col_num],font_style)
-    
-
-
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    format = workbook.add_format({'num_format': 'dd/mm/yy'})
+    worksheet.write('A1','Item')
+    worksheet.write('B1','Opening Quantity')
+    worksheet.write('C1','Added Quantity')
+    worksheet.write('D1','Issued / Dispatched')
+    worksheet.write('E1','Balance Quantity')
     allData = Inventory.objects.all().values_list('item_code','opening_qty','added_qty','issued_dispatched_qty','balanced_qty')
+    col = ['A','B','C','D','E']
+    row_num=1
     for data in allData:
         row_num += 1
         for col_num in range(len(data)):
-            ws.write(row_num,col_num,data[col_num],font_style)
-    wb.save(response)
+            worksheet.write(str(col[col_num]+str(row_num)),data[col_num],format)
+    workbook.close()
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+
+    # tell the browser what the file is named
+    response['Content-Disposition'] = 'attachment;filename="inventory.xlsx"'
+
+    # put the spreadsheet data into the response
+    response.write(output.getvalue())
+
+    # return the response
+    return response
+    
+@login_required(login_url='login')
+def exportStockExcel(request):
+
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    format = workbook.add_format({'num_format': 'dd/mm/yy'})
+    worksheet.write('A1', 'Customer Name')
+    worksheet.write('B1', 'Sales Order')
+    worksheet.write('C1', 'Order Date')
+    worksheet.write('D1', 'Item Code')
+    worksheet.write('E1', 'Order Qty')
+    worksheet.write('F1', 'Supplier Name')
+    worksheet.write('G1', 'Required Qty')
+    worksheet.write('H1', 'Recieved Qty')
+    worksheet.write('I1', 'PO Number')
+    worksheet.write('J1', 'Stock Inward Estimate Date')
+    worksheet.write('K1', 'Latest Stock Inward Actual Date')
+    col = ['A','B','C','D','E','F','G','H','I','J','K']
+    rowNo = 1
+    allData = StockRequirement.objects.all().values_list('order__customer_name','order__sales_order','order__order_date','order__item_code','order__order_qty','supplier_name','required_qty','recieved_qty','po_number','stock_inward_estimate_date','latest_stock_inward_actual_date')
+    for data in allData:
+        rowNo+=1
+        for row in range(len(data)):
+            worksheet.write(str(col[row]+str(rowNo)),str(data[row]),format)
+    workbook.close()
+
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+
+    # tell the browser what the file is named
+    response['Content-Disposition'] = 'attachment;filename="stock_requirement.xlsx"'
+
+    # put the spreadsheet data into the response
+    response.write(output.getvalue())
+
+    # return the response
     return response
 
+@login_required(login_url='login')
+def stockRequirement(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
+    stockDetails = StockRequirement.objects.all()
+    suppliers = Supplier.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'stockDetails':stockDetails,
+        'suppliers':suppliers
+    }
+    return render(request,'pms/stock_requirement.html',context)
+
+@login_required(login_url='login')
+def addSupplier(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
+    if request.method == 'POST':
+        name = request.POST['name']
+        email = request.POST['email']
+        contact = request.POST['contact']
+        gst = request.POST['gst']
+        pan = request.POST['pan']
+        address = request.POST['address']
+        newSupplier = Supplier(name=name,email=email,phone=contact,gst_no=gst,pan_no=pan,address=address)
+        newSupplier.save()
+    context = {
+        'consoleName':consoleName
+    }
+    return render(request,'pms/add_supplier.html',context)
+
+
+
+@login_required(login_url='login')
+def updateStockRequirement(request,consoleName):
+    user = request.user
+    userData = UserData.objects.filter(user=user).all()
+    for user in userData:
+        if not user.permission == consoleName:
+            return redirect('consoles')
+    if request.method=='POST':
+        id = request.POST['id']
+        estimate_date = request.POST['estimate_date']
+        actual_date = request.POST['actual_date']
+        supplier_name = request.POST['supplier_name']
+        received_qty = request.POST['qty_recieved']
+        po_num = request.POST['po_num']
+        stock = StockRequirement.objects.filter(id=id).first()
+        if estimate_date:
+            stock.stock_inward_estimate_date = estimate_date
+            
+        if actual_date:
+            stock.latest_stock_inward_actual_date = actual_date
+            
+        if supplier_name:
+            stock.supplier_name=supplier_name
+            
+        if int(received_qty)>0:
+            inventory = Inventory.objects.filter(item_code=stock.order.item_code).first()
+            inventory.opening_qty = inventory.balanced_qty
+            inventory.added_qty = received_qty
+            inventory.balanced_qty += int(received_qty)
+            inventory.save() 
+            stock.required_qty = int(stock.required_qty) - int(received_qty)
+            stock.recieved_qty = received_qty
+            
+        if po_num:
+            stock.po_number = po_num
+        stock.save()
+        
+    return redirect('stockRequirement',consoleName)

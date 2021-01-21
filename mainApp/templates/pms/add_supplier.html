@@ -1,0 +1,100 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block addSupplier %}active{% endblock %}
+{% block content %}
+
+
+<h1 class="mb-5">Add Supplier</h1>
+
+<form action="{% url 'addSupplier' consoleName=consoleName %}" method="POST">
+    {% csrf_token %}
+    <input type="hidden" value="{{data.id}}" name="id">
+    <div class="row">
+
+        <div class="col-lg-4 col-md-4 col-12">
+            <div class="mb-4">
+      
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Name">
+         
+        </div>
+        </div>
+
+        <div class="col-lg-4 col-md-4 col-12">
+            <div class="mb-4">
+      
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="Email">
+        </div>
+
+        </div>
+
+        <div class="col-lg-4 col-md-4 col-12">
+            <div class="mb-4">
+                <label for="contact" class="form-label">Contact No.</label>
+                <input type="text" class="form-control" id="contact" name="contact" placeholder="Contact No.">
+              </div>
+             
+
+        </div>
+
+
+
+    </div>
+
+       
+
+        
+
+
+       
+            <div class="mb-4">
+            <label for="address" class="form-label">Address</label>
+            <input type="text" class="form-control" id="address" name="address" placeholder="Address">
+          </div>
+
+
+       
+
+
+
+
+
+<div class="row">
+
+    <div class="col-lg-6 col-md-6 col-12">
+        <div class="mb-4">
+            <label for="gst" class="form-label">GST No.</label>
+            <input type="gst" class="form-control" id="gst" name="gst" placeholder="GST No.">
+          </div>
+    </div>
+
+
+    <div class="col-lg-6 col-md-6 col-12">
+        <div class="mb-4">
+            <label for="pan" class="form-label">PAN No.</label>
+            <input type="pan" class="form-control" id="pan" name="pan" placeholder="PAN No.">
+          </div>
+    </div>
+
+</div>
+      
+    </div>
+   
+
+
+  <div class="text-center mt-2">
+
+    <button type="submit" class="btn btn-primary btn-lg mr-5">Add Supplier</button>
+    <button type="reset" class="btn btn-danger btn-lg">Reset</button>
+
+  </div>
+
+</form>
+
+{% endblock %}
+
+{% block js %}
+
+
+
+{% endblock %}

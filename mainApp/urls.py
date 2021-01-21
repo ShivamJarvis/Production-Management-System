@@ -17,6 +17,9 @@ urlpatterns = [
     path('dashboard/<consoleName>/inactivate/employee/<int:empId>/',views.inActivateEmployeeDetails,name='inActivateEmployeeDetails'),
     # For Change the User/Employee Permission
     path('dashboard/<consoleName>/employee/<int:empId>/permissions/',views.employeePermissions,name='employeePermissions'),
+    # For Add Supplier
+
+    path('dashboard/<consoleName>/supplier/add/',views.addSupplier,name='addSupplier'),
 
     # For Production Console
     path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
@@ -27,11 +30,9 @@ urlpatterns = [
 
      # For Warehouse Console
     path('dashboard/<consoleName>/inventory/details/',views.warehouseInventory,name='warehouseInventory'),
+    path('dashboard/<consoleName>/inventory/requirement/',views.stockRequirement,name='stockRequirement'),
+    path('dashboard/<consoleName>/update/inventory/requirement/',views.updateStockRequirement,name='updateStockRequirement'),
     path('dashboard/<consoleName>/inventory/upload/',views.warehouseInventoryUpload,name='warehouseInventoryUpload'),
-    path('export/excel/', views.exportInventoryExcel,name='exportInventoryExcel'),
-
-
-
-
-
-]
+    path('export/excel/inventory/', views.exportInventoryExcel,name='exportInventoryExcel'),
+    path('export/excel/stock/', views.exportStockExcel,name='exportStockExcel'),
+] 

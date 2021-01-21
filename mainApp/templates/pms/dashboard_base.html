@@ -49,6 +49,12 @@
 							<i class="fas fa-sliders-h"></i> <span class="align-middle">Change Permissions</span>
 						</a>
 					</li>
+
+					<li class="sidebar-item {% block addSupplier %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'addSupplier' consoleName=consoleName %}">
+							<i class="fas fa-sliders-h"></i> <span class="align-middle">Add Supplier</span>
+						</a>
+					</li>
 					{% endif %}
 
 					{% if consoleName == 'Production' %}
@@ -79,6 +85,12 @@
 					<li class="sidebar-item {% block warehouse_inventory %}{% endblock %}">
 						<a class="sidebar-link" href="{% url 'warehouseInventory' consoleName=consoleName %}">
 							<i class="fas fa-store-alt"></i> <span class="align-middle">Inventory</span>
+						</a>
+					</li>
+
+					<li class="sidebar-item {% block warehouse_stock_requirement %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'stockRequirement' consoleName=consoleName %}">
+							<i class="fas fa-cubes"></i> <span class="align-middle">Stock Requirement</span>
 						</a>
 					</li>
 
