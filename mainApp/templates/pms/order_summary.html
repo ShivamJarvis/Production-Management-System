@@ -80,6 +80,7 @@
   </div>
   <!-- Invoice Upload Button End -->
 
+  
 
 
 </div>
@@ -88,7 +89,10 @@
     <thead>
         <tr class="table-dark">
           <th scope="col">
-
+            <form action="" method="POST">
+              {% csrf_token %}
+          <input type="checkbox" class="form-check-input" id="all" name='all'>
+      </form>
           </th>
           <th scope="col">Order Type</th>
           <th scope="col">Sales Order Number</th>
@@ -98,11 +102,13 @@
           <th scope="col">Order Date</th>
           <th scope="col">Delivery Date</th>
           <th scope="col">Status</th>
-          <th scope="col">See Order Details</th>
+          <th scope="col">Details</th>
+          <th scope="col">Schedule</th>
         </tr>
       </thead>
       <tbody>
         {% for data in orderData %}
+        {% if not data.qty_in_engineering == data.order_qty and not data.qty_in_buffing == data.order_qty and not data.qty_in_provisionally_schedule == data.order_qty and not data.qty_in_plating == data.order_qty and not data.qty_in_4sbuffing == data.order_qty and not data.qty_in_laquer == data.order_qty and not data.qty_in_packaging == data.order_qty %}
         <tr class="table-success">
           <td> <span class="tableData">
               <form action="" method="POST">
@@ -118,10 +124,103 @@
           <td><span class="tableData">{{data.order_date}}</span></td>
           <td><span class="tableData">{{data.item_delivery_date}}</span></td>
           <td><span class="tableData">{{data.status}}</span></td>
-          <td><a href="" class="btn btn-info">See Order Details</a></td>
-  
-        </tr>
+          <td><a href="{% url 'orderDetails' consoleName=consoleName orderId=data.id %}" class="btn btn-info">Details</a></td>
+          <td><!-- Button trigger modal -->
+            <button type="button" class="btn btn-info ml-3" data-bs-toggle="modal" data-bs-target="#DispatchModal{{data.id}}">
+              Schedule
+            </button>
+            
+            <!-- Modal -->
+            <div class="modal fade" id="DispatchModal{{data.id}}" tabindex="-1" aria-labelledby="DispatchModalLabel{{data.id}}" aria-hidden="true">
+              <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                  <div class="modal-header">
+                    <h5 class="modal-title" id="DispatchModalLabel{{data.id}}">Dispatch / Schedule</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                  </div>
+                  <div class="modal-body">
+                    <div class="row text-center mt-2">
+          
+                      <div class="col-3">
+                        <h5> <strong>  Item Code :</strong> </h5>
+                      </div>
+                      <div class="col-3">
+                        <h5>{{data.item_code}}</h5>
+                      </div>
+                      <div class="col-3">
+                        <h5> <strong> Sales Order ID : </strong></h5>
+                      </div>
+                      <div class="col-3">
+                        <h5>{{data.sales_order}}</h5>
+                      </div>
+                    </div>
+                    <hr>
+                    <div class="row mt-2 text-center">
+                      <div class="col-6">
+                        <h5> <strong> Order Type : </strong></h5>
+                      </div>
+                      <div class="col-6">
+                        <h5>{{data.order_type}}</h5>
+                      </div>
+                      <hr>
+                      <div class="col-6">
+                        <h5> <strong> Customer Name : </strong></h5>
+                      </div>
+                      <div class="col-6">
+                        <h5>{{data.customer_name}}</h5>
+                      </div>
+                      <hr>
+                      <div class="col-6">
+                        <h5> <strong> Order Quantity : </strong></h5>
+                      </div>
+                      <div class="col-6">
+                        <h5>{{data.order_qty}}</h5>
+                      </div>
+                      <hr>
+                    </div>
+                   
+                    
+                   
+                    
+                    {% for inventory in inventoryDetails %}
+                    {% if inventory.item_code == data.item_code %}
+                    <div class="row text-center">
+                      <div class="col-6">
+                        <h5>
+                           <strong> Available Quantity : </strong>
+                        </h5>
+                      </div>
+                      <div class="col-6">
+                        <h5>{{inventory.balanced_qty}}</h5>
+                      </div>
+                      <hr>
+                      <div class="col-6">
+                        {% if inventory.balanced_qty >= data.order_qty and data.payment_staus == 'Approved' and data.order_qty >= data.total_processed_qty %}
+                        <a href="{% url 'orderDispatch' consoleName=consoleName orderId=data.id %}" class="btn btn-info">Dispatch Order</a>
+                        {% else %}
+                        <a  class="btn btn-secondary" aria-disabled="true">Dispatch Order</a>
+                        {% endif %}
+                      </div>
+                      <div class="col-6">
+                        <a href="" class="btn btn-danger">Scheduled Provisionally</a>
 
+                      </div>
+                    </div>
+                    
+                    {% endif %}
+                    {% endfor %}
+            
+            
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      
+                  </div>
+                </div>
+              </div>
+            </div></td>
+        </tr>
+        {% endif %}
       {% endfor %}
       
       </tbody>

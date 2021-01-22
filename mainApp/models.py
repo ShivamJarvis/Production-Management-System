@@ -89,3 +89,13 @@ class Supplier(models.Model):
     def __str__(self):
         return self.name
 
+class Job(models.Model):
+    job_id = models.CharField(max_length=400)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
+    finish_type = models.CharField(max_length=300,null=True,blank=True)
+    department = models.CharField(max_length=300)
+    qty = models.IntegerField()
+    date = models.DateField()
+    def __str__(self):
+        return self.job_id
+

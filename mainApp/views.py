@@ -6,13 +6,13 @@ from numpy.core.numeric import NaN
 from pandas import io
 from pandas.io import excel
 from mainApp import models
-from mainApp.models import Inventory, Order, Supplier, UserData, StockRequirement
+from mainApp.models import Inventory, Job, Order, Supplier, UserData, StockRequirement
 import pandas as pd
 import xlwt
 import xlsxwriter
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import Permission, User
-from datetime import datetime
+from datetime import date, datetime
 # Create your views here.
 def handleLogin(request):
     if request.user.username:
@@ -395,10 +395,12 @@ def orderSummary(request,consoleName):
             return redirect('consoles')
     
     orderData = Order.objects.all()
+    inventoryDetails = Inventory.objects.all()
 
     context = {
         'consoleName':consoleName,
-        'orderData':orderData
+        'orderData':orderData,
+        'inventoryDetails':inventoryDetails
     }
     return render(request,'pms/order_summary.html',context)
 
@@ -671,3 +673,64 @@ def updateStockRequirement(request,consoleName):
         stock.save()
         
     return redirect('stockRequirement',consoleName)
+
+def orderDetails(request,consoleName,orderId):
+    order = Order.objects.filter(id=orderId).first()
+    context = {
+        'orderId':orderId,
+        'consoleName':consoleName,
+        'orderDetails':order
+    }
+    return render(request,'pms/order_details.html',context)
+
+def orderDispatch(request,consoleName,orderId):
+    order = Order.objects.filter(id=orderId).first()
+    if request.method == 'POST':
+        dispatchValue = request.POST['dispatch']
+        if dispatchValue == 'dispatchA':
+            order.total_processed_qty = order.order_qty
+            order.qty_in_packaging = order.order_qty
+            order.save()
+            inventory = Inventory.objects.filter(item_code=order.item_code).first()
+            inventory.opening_qty = inventory.balanced_qty
+            inventory.issued_dispatched_qty = order.order_qty
+            inventory.balanced_qty -= inventory.issued_dispatched_qty
+            inventory.save()
+            id = 0
+            allJob = Job.objects.all()
+            if not allJob:
+                id = 1
+            else:
+                id = len(allJob)+1
+            id = "000/"+id+"/"+order.order_type
+            newJob = Job(job_id = id, order=order,department="Packaging",qty=order.order_qty,date=date.today())
+            newJob.save()
+        elif dispatchValue == 'dispatchP':
+            qty = int(request.POST['qty'])
+            order.qty_in_packaging = qty
+            if order.total_processed_qty:
+                order.total_processed_qty += qty
+            else:
+                order.total_processed_qty = qty
+            order.save()
+            inventory = Inventory.objects.filter(item_code=order.item_code).first()
+            inventory.opening_qty = inventory.balanced_qty
+            inventory.issued_dispatched_qty = qty
+            inventory.balanced_qty -= inventory.issued_dispatched_qty
+            inventory.save()
+            allJob = Job.objects.all()
+            if not allJob:
+                id = 0
+            else:
+                id = len(allJob)+1
+            id = "000/"+str(id)+"/"+order.order_type
+            newJob = Job(job_id = id, order=order,department="Packaging",qty=qty,date=date.today())
+            newJob.save()
+        return redirect('orderSummary',consoleName)
+
+    context = {
+        'order':order,
+        'orderId':orderId,
+        'consoleName':consoleName
+    }
+    return render(request,'pms/order_dispatch.html',context)

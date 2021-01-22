@@ -23,6 +23,8 @@ urlpatterns = [
 
     # For Production Console
     path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
+    path('dashboard/<consoleName>/order/details/<int:orderId>/',views.orderDetails,name='orderDetails'),
+    path('dashboard/<consoleName>/order/dispatch/<int:orderId>/',views.orderDispatch,name='orderDispatch'),
     path('dashboard/<consoleName>/provisional/schedule/',views.provisionalSchedule,name='provisionalSchedule'),
     path('dashboard/<consoleName>/order/history/',views.orderHistory,name='orderHistory'),
     # For Order File Upload

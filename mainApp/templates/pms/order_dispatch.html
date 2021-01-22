@@ -1,0 +1,64 @@
+{% extends 'pms/dashboard_base.html' %}
+{% load mathfilters %}
+{% block css %}
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<h1>Dispatch Order : {{order.sales_order}} with item : {{order.item_code}}</h1>
+
+<div class="container mt-5">
+    <form action="{% url 'orderDispatch' consoleName=consoleName orderId=orderId %}" method="POST">
+        {% csrf_token %}
+        <div class="form-check mb-4">
+            <input class="form-check-input" value="dispatchA" onclick="enableDisableQtyField()" type="radio" name="dispatch" id="dispatch1">
+            <label class="form-check-label" for="dispatch1">
+              Dispatch Completely
+            </label>
+          </div>
+          <div class="form-check">
+              <div class="row">
+                  <div class="col-auto">
+                    <input class="form-check-input" onclick="enableDisableQtyField()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
+                    <label class="form-check-label" for="dispatch2">
+                      Partially Dispatch
+                    </label>
+                  </div>
+                  <div class="col-auto">
+
+                    <input type="number" min="1"   id="qty" name="qty" max="{{order.order_qty|sub:order.total_processed_qty}}" class="form-control">
+                  </div>
+              </div>
+        
+          </div>
+          <div class="mt-4">
+              <button type="submit" class="btn btn-primary">Dispatch</button>
+          </div>
+    </form>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+
+<script>
+
+    function enableDisableQtyField(){
+        var dispatchAll = document.getElementById('dispatch1')
+        var qty = document.getElementById('qty')
+        qty.disabled = dispatchAll.checked ? true : false;
+        if(!qty.disabled){
+            qty.focus();
+        }
+    }
+
+
+  
+</script>
+
+
+{% endblock %}
