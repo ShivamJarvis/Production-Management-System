@@ -26,11 +26,12 @@
         </div>
         <div class="modal-body">
           <h3>
-              <form action="{% url 'warehouseInventoryUpload' consoleName=consoleName %}" method="POST" enctype="multipart/form-data">
+
+              <form action="{% url 'uploadStockRequirement' consoleName=consoleName %}" method="POST" enctype="multipart/form-data">
                   {% csrf_token %}
                 <div class="mb-3">
                     <label for="formFile" class="form-label">Upload Recieved Stock in Excel Format</label>
-                    <input class="form-control" name="inventory_file" type="file" id="formFile">
+                    <input class="form-control" name="stock_file" type="file" id="formFile">
                   </div>
                   
               
@@ -69,6 +70,7 @@
       </thead>
       <tbody>
         {% for data in stockDetails %}
+        {% if not data.pending_qty == 0 %}
         <tr class="table-info">
          
           <td> <span class="tableData">{{data.order.customer_name}}</span></td>
@@ -109,7 +111,12 @@
                         Estimated Delivery Date
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
+                      {% if data.stock_inward_estimate_date %}
                         <input type="date" name="estimate_date" class="form-control">
+                        {% else %}
+                        <input type="date" name="estimate_date" class="form-control">
+
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -181,6 +188,7 @@
           
   
         </tr>
+        {% endif %}
 
       {% endfor %}
       

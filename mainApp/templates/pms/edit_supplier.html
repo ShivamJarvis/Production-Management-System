@@ -1,0 +1,109 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block listSupplier %}active{% endblock %}
+{% block content %}
+
+<h1 class="mb-5">List of Suppliers</h1>
+
+
+<table class="table" id="supplierTable">
+    <thead>
+      <tr>
+        <th scope="col">Name</th>
+        <th scope="col">Email</th>
+        <th scope="col">Phone</th>
+        <th scope="col">Address</th>
+        <th scope="col">GST No.</th>
+        <th scope="col">PAN No.</th>
+        <th scope="col">Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+        {% for data in supplierData %}
+      <tr>
+        <td>{{data.name}}</td>
+        <td>{{data.email}}</td>
+        <td>{{data.phone}}</td>
+        <td>{{data.address}}</td>
+        <td>{{data.gst_no}}</td>
+        <td>{{data.pan_no}}</td>
+        <td>
+
+
+<!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{data.id}}">
+    Edit
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop{{data.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel{{data.id}}" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel{{data.id}}">Supplier Name : {{data.name}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="{% url 'listSupplier' consoleName=consoleName %}" method="post">
+              {% csrf_token %}
+                <input type="hidden" value="{{data.id}}" name="id">
+                <div class="mb-3">
+                  <label for="name" class="form-label">Name</label>
+                  <input type="text" class="form-control" id="name" value="{{data.name}}" name="name">
+                </div>
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input type="email" class="form-control" id="email" value="{{data.email}}" name="email">
+                </div>
+
+                <div class="mb-3">
+                  <label for="phone" class="form-label">Phone</label>
+                  <input type="text" class="form-control" id="phone" value="{{data.phone}}" name="phone">
+                </div>
+
+                <div class="mb-3">
+                  <label for="address" class="form-label">Address</label>
+                  <input type="text" class="form-control" id="address" value="{{data.address}}" name="address">
+                </div>
+
+                <div class="mb-3">
+                  <label for="gst" class="form-label">GST No.</label>
+                  <input type="text" class="form-control" value="{{data.gst_no}}" id="gst" name="gst">
+                </div>
+   
+                <div class="mb-3">
+                  <label for="pan" class="form-label">PAN No.</label>
+                  <input type="text" class="form-control" value="{{data.pan_no}}" id="pan" name="pan">
+                </div>
+
+            
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-primary">Update</button>
+        </form>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+</table>
+
+
+
+{% endblock %}
+
+{% block js %}
+
+<script>
+
+    $(document).ready( function () {
+        $('#supplierTable').DataTable( {
+        });
+        } );
+    </script>
+
+{% endblock %}

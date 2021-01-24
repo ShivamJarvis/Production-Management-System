@@ -396,11 +396,35 @@ def orderSummary(request,consoleName):
     
     orderData = Order.objects.all()
     inventoryDetails = Inventory.objects.all()
+    salesOrder =[]
+    customerName = []
+    itemCode = []
+    for data in orderData:
+            if not  data.qty_in_engineering == data.order_qty and not data.qty_in_buffing == data.order_qty and not data.qty_in_provisionally_schedule == data.order_qty and not data.qty_in_plating == data.order_qty and not data.qty_in_4sbuffing == data.order_qty and not data.qty_in_laquer == data.order_qty and not data.qty_in_packaging == data.order_qty:
+                if not  data.customer_name in customerName:
+                    customerName.append(data.customer_name)
+                if not data.sales_order in salesOrder:
+                    salesOrder.append(data.sales_order)
+                if not data.item_code in itemCode:
+                    itemCode.append(data.item_code)
+            deliveryDate = data.item_delivery_date
+            remainingDaysForDelivery = deliveryDate - date.today()
+            data.remaining_days_delivery = remainingDaysForDelivery.days
+            completeDate =  data.completed_date
+            if completeDate:
+                remaingForCompletion =  date.today() - completeDate
+                if remaingForCompletion.days == 2:
+                    data.completed = True
+            data.save()
+
 
     context = {
         'consoleName':consoleName,
         'orderData':orderData,
-        'inventoryDetails':inventoryDetails
+        'inventoryDetails':inventoryDetails,
+        'customerName':customerName,
+        'salesOrder':salesOrder,
+        'itemCode':itemCode
     }
     return render(request,'pms/order_summary.html',context)
 
@@ -444,7 +468,7 @@ def orderUpload(request,consoleName):
         fs = FileSystemStorage()
         filename = fs.save(orderFile.name,orderFile)        
         if orderFile:
-            data = pd.read_excel('media/'+orderFile.name,engine='openpyxl')
+            data = pd.read_excel('media/'+filename,engine='openpyxl')
             data['Direct Orders'] = data['Direct Orders'].fillna('Others')
             lenOfData = len(data)
             for i in range(0,lenOfData):
@@ -456,19 +480,21 @@ def orderUpload(request,consoleName):
                 itemCode = data['Item'][i]
                 deliveryDate = data['Item Delivery Date'][i]
                 orderQuantity = data['Qty'][i]
-                newOrder = Order(order_type=orderType,sales_order=salesOrderNo,customer_name=customerName,order_date=orderDate,item_code=itemCode,item_delivery_date=deliveryDate,order_qty=orderQuantity,description=description,status='Pending')
+                remainingDaysForDelivery = deliveryDate.date() - date.today()
+                newOrder = Order(order_type=orderType,sales_order=salesOrderNo,customer_name=customerName,order_date=orderDate,item_code=itemCode,item_delivery_date=deliveryDate,order_qty=orderQuantity,description=description,status='Pending',remaining_days_delivery=remainingDaysForDelivery.days)
                 newOrder.save()
-        
                 inventory = Inventory.objects.filter(item_code = itemCode).first()
                 if inventory:
-                    requiredQty = inventory.balanced_qty - orderQuantity
-                    if requiredQty<0:
+                    requiredQty = orderQuantity - inventory.balanced_qty 
+                    print(requiredQty)
+                    if requiredQty>0:
                         stockRequirement = StockRequirement.objects.filter(order__item_code=itemCode).first()
                         if stockRequirement:
+                            print('---------------if---------------')
                             newStockRequirement = StockRequirement(order=newOrder,required_qty= orderQuantity, pending_qty = orderQuantity,recieved_qty=0)
                             newStockRequirement.save()
                         else:
-                            requiredQty = (inventory.balanced_qty - orderQuantity) * (-1)
+                            requiredQty = (orderQuantity - inventory.balanced_qty )
                             newStockRequirement = StockRequirement(order=newOrder,required_qty= requiredQty, pending_qty = requiredQty,recieved_qty=0)
                             newStockRequirement.save()
                 else:
@@ -505,7 +531,7 @@ def warehouseInventoryUpload(request,consoleName):
         fs = FileSystemStorage()
         filename = fs.save(inventoryFile.name,inventoryFile)
         if inventoryFile:
-            data = pd.read_excel('media/'+inventoryFile.name,engine='openpyxl')
+            data = pd.read_excel('media/'+filename,engine='openpyxl')
             data['Opening Quantity'] = data['Opening Quantity'].fillna(0)
             data['Added Quantity'] = data['Added Quantity'].fillna(0)
             data['Issued / Dispatched'] = data['Issued / Dispatched'].fillna(0)
@@ -658,7 +684,7 @@ def updateStockRequirement(request,consoleName):
             
         if supplier_name:
             stock.supplier_name=supplier_name
-            
+
         if int(received_qty)>0:
             inventory = Inventory.objects.filter(item_code=stock.order.item_code).first()
             inventory.opening_qty = inventory.balanced_qty
@@ -674,26 +700,20 @@ def updateStockRequirement(request,consoleName):
         
     return redirect('stockRequirement',consoleName)
 
-def orderDetails(request,consoleName,orderId):
-    order = Order.objects.filter(id=orderId).first()
-    context = {
-        'orderId':orderId,
-        'consoleName':consoleName,
-        'orderDetails':order
-    }
-    return render(request,'pms/order_details.html',context)
-
 def orderDispatch(request,consoleName,orderId):
     order = Order.objects.filter(id=orderId).first()
     if request.method == 'POST':
         dispatchValue = request.POST['dispatch']
         if dispatchValue == 'dispatchA':
-            order.total_processed_qty = order.order_qty
-            order.qty_in_packaging = order.order_qty
+            qty = order.order_qty - order.total_processed_qty
+            order.total_processed_qty = qty
+            order.qty_in_packaging = qty
+            order.status = 'Completed'
+            order.completed_date = date.today()
             order.save()
             inventory = Inventory.objects.filter(item_code=order.item_code).first()
             inventory.opening_qty = inventory.balanced_qty
-            inventory.issued_dispatched_qty = order.order_qty
+            inventory.issued_dispatched_qty = qty
             inventory.balanced_qty -= inventory.issued_dispatched_qty
             inventory.save()
             id = 0
@@ -702,16 +722,20 @@ def orderDispatch(request,consoleName,orderId):
                 id = 1
             else:
                 id = len(allJob)+1
-            id = "000/"+id+"/"+order.order_type
-            newJob = Job(job_id = id, order=order,department="Packaging",qty=order.order_qty,date=date.today())
+            id = "000/"+str(id)+"/"+order.order_type
+            newJob = Job(job_id = id, order=order,department="Packaging",qty=qty,date=date.today())
             newJob.save()
         elif dispatchValue == 'dispatchP':
             qty = int(request.POST['qty'])
-            order.qty_in_packaging = qty
-            if order.total_processed_qty:
-                order.total_processed_qty += qty
-            else:
-                order.total_processed_qty = qty
+            order.qty_in_packaging += qty
+            order.latest_partially_dispatched_qty = qty
+            order.latest_partially_dispatched_date = date.today()
+            order.partially_dispatched_qty += qty
+            order.total_processed_qty += qty
+            order.status = 'Partially Dispatched'
+            if order.total_processed_qty == order.order_qty:
+                order.status = 'Completed'
+                order.completed_date = date.today()
             order.save()
             inventory = Inventory.objects.filter(item_code=order.item_code).first()
             inventory.opening_qty = inventory.balanced_qty
@@ -734,3 +758,75 @@ def orderDispatch(request,consoleName,orderId):
         'consoleName':consoleName
     }
     return render(request,'pms/order_dispatch.html',context)
+
+
+def orderUpdatePaymentStatus(request,consoleName):
+    if request.method=='POST':
+        id = request.POST['id']
+        order = Order.objects.filter(id=id).first()
+        status = request.POST['payment_status']
+        order.payment_staus = status
+        order.save()
+    return redirect('orderSummary',consoleName)
+
+def orderCancel(request,consoleName):
+    if request.method == 'POST':
+        allId = request.POST['ids']
+        allId = allId.split(',')
+        for id in allId:
+            order = Order.objects.filter(id=int(id)).first()
+            order.status = "Canceled"
+            order.save()
+    return redirect('orderSummary',consoleName)
+
+
+def uploadStockRequirement(request,consoleName):
+    if request.method == 'POST':
+        stockRequirement = StockRequirement.objects.all()
+        stockFile = request.FILES['stock_file']
+        fs = FileSystemStorage()
+        filename = fs.save(stockFile.name,stockFile) 
+
+        stockData = pd.read_excel('media/'+filename,engine='openpyxl')     
+        stockData['Purchase Order'] = stockData['Purchase Order'].fillna('NA')
+        for stock in range (0,len(stockData)):
+            if not stockData['Purchase Order'][stock] == 'NA':
+  
+                for data in stockRequirement:
+                    if data.po_number:
+                        print(stockData['Purchase Order'][stock])
+                        if data.po_number == stockData['Purchase Order'][stock] and data.order.item_code == stockData['Item Code'][stock]:
+                            data.recieved_qty += int(stockData['Stock Qty'][stock])
+                            inventory = Inventory.objects.filter(item_code=data.order.item_code).first()
+                            inventory.opening_qty = inventory.balanced_qty 
+                            inventory.added_qty = data.recieved_qty
+
+                            inventory.balanced_qty += inventory.added_qty 
+                            inventory.save()
+                     
+                            if data.recieved_qty < data.required_qty:
+                                data.pending_qty = data.required_qty - data.recieved_qty
+
+                        data.save()
+                
+    return redirect('stockRequirement',consoleName)
+
+def listSupplier(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        supplier = Supplier.objects.filter(id=id).first()
+        supplier.name = request.POST['name']
+        supplier.email = request.POST['email']
+        supplier.phone = request.POST['phone']
+        supplier.gst_no = request.POST['gst']
+        supplier.pan_no = request.POST['pan']
+        supplier.address = request.POST['address']
+        supplier.save()
+
+    supplierData = Supplier.objects.all()
+    context = {
+        'consoleName' : consoleName,
+        'supplierData':supplierData
+    }
+    return render(request,'pms/edit_supplier.html',context)
+
