@@ -1,0 +1,276 @@
+{% extends 'pms/dashboard_base.html' %}
+{% load mathfilters %}
+{% block css %}
+{% endblock %}
+
+
+
+{% block content %}
+
+
+<h1>Provisionally Schedule Order : {{order.sales_order}} with item : {{order.item_code}}</h1>
+
+{% if order.order_type == 'Direct' %}
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Customer Name : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.customer_name}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Order Qty. : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.order_qty}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Available Qty. : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{inventory.balanced_qty}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Payment Status : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.payment_staus}} </h5>
+    </div>
+</div>
+
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Raw Material : </h5>
+    </div>
+    <div class="col-8">
+        <h5>Not Applicable</h5>
+    </div>
+</div>
+
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Processed Qty. : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.total_processed_qty}}</h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Expected Raw Material Date: </h5>
+    </div>
+    <div class="col-8">
+      <h5>Not Applicable</h5>
+    </div>
+</div>
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Order Type: </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.order_type}}</h5>
+    </div>
+</div>
+
+
+{% else %}
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Customer Name : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.customer_name}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Order Qty. : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.order_qty}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Available Qty. : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{inventory.balanced_qty}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Payment Status : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.payment_staus}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Raw Material : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{rawInventory.balanced_qty}} </h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Processed Qty. : </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.total_processed_qty}}</h5>
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Expected Raw Material Date: </h5>
+    </div>
+    <div class="col-8">
+        {% if rawStock.stock_inward_estimate_date %}
+        <h5>{{rawStock.stock_inward_estimate_date}}</h5>
+        {% else %}
+        <h5>Not Found</h5>     
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-3">
+    <div class="col-2">
+        <h5>Order Type: </h5>
+    </div>
+    <div class="col-8">
+        <h5>{{order.order_type}}</h5>
+    </div>
+</div>
+<div class="container mt-4">
+        {% if not order.total_processed_qty == order.order_qty %}
+        <form action="{% url 'orderSchedule' consoleName=consoleName orderId=order.id %}" method="post">
+            {% csrf_token %}
+            {% if rawInventory.balanced_qty <= order.order_qty and not rawStock.stock_inward_estimate_date %}
+                <div class="mb-3 col-4">
+                  <label for="qty" class="form-label">Quantity</label>
+                  <input type="number" class="form-control" name="qty"  min="0" max="{{ rawInventory.balanced_qty }}" id="qty" >
+                </div>
+                <div class="mb-3 col-4">
+                  <label for="qty" class="form-label">Date</label>
+                  <input type="date" class="form-control inspectionDate" name="date"   >
+                </div>
+                {% elif rawInventory.balanced_qty <= order.order_qty and rawStock.stock_inward_estimate_date %}
+
+                <div class="mb-3 col-4">
+                    <label for="qty" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" name="qty"   min="0" max="{{ order.order_qty|sub:order.for_dispatch|sub:order.total_processed_qty }}" id="qty" >
+                  </div>
+                  <div class="mb-3 col-4">
+                    <label for="qty" class="form-label">Date</label>
+                    <input type="date" id="date" class="form-control estimateDate"  name="date"  >
+                  </div>
+
+
+
+                {% endif %}
+                <button type="submit" class="btn btn-primary">Submit</button>            
+          
+        </form>
+        {% else %}
+        <h5>All Quantity is Already Processed </h5>
+        <a href="{% url 'orderSummary' consoleName=consoleName %}" class="btn btn-primary">Back To Order Summary</a>
+        {% endif %}
+    </div>
+
+
+
+{% endif %}
+
+{% endblock %}
+
+{% block js %}
+
+
+<script>
+
+$(function() {
+  $(document).ready(function () {
+    
+   var todaysDate = new Date(); // Gets today's date
+    
+    // Max date attribute is in "YYYY-MM-DD".  Need to format today's date accordingly
+    
+    var year = todaysDate.getFullYear(); 						// YYYY
+    var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)	// MM
+  
+    var day = ("0" + todaysDate.getDate()).slice(-2);			// DD
+    day = parseInt(day)+1;
+   	var maxDate = (year +"-"+ month +"-"+ day); // Results in "YYYY-MM-DD" for today's date 
+
+       try{
+
+           $('.inspectionDate').attr('min',maxDate);
+       }
+       catch(e){
+
+       }
+        var year1 = parseInt("{{rawStock.stock_inward_estimate_date.year}}");
+     
+        var month1 = ("0" + (parseInt("{{rawStock.stock_inward_estimate_date.month}}"))).slice(-2)
+        var day1 = ("0" + parseInt("{{rawStock.stock_inward_estimate_date.day}}")).slice(-2);
+
+        
+
+        var maxDate1 = (year1 +"-"+ month1 +"-"+ day1);
+        $('.estimateDate').attr('min',maxDate1);
+
+        $('#date').on("click",function(){
+        
+            if(parseInt("{{rawInventory.balanced_qty}}") >= parseInt(document.getElementById("qty").value)){
+                var year = todaysDate.getFullYear();
+                var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)
+                var day = ("0" + todaysDate.getDate()).slice(-2);			
+                day = parseInt(day)+1;
+                var maxDate = (year +"-"+ month +"-"+ day);
+                $('.estimateDate').attr('min',maxDate);
+            }
+            else{
+                var year1 = parseInt("{{rawStock.stock_inward_estimate_date.year}}");
+     
+     var month1 = ("0" + (parseInt("{{rawStock.stock_inward_estimate_date.month}}"))).slice(-2)
+     var day1 = ("0" + parseInt("{{rawStock.stock_inward_estimate_date.day}}")).slice(-2);
+
+     
+
+     var maxDate1 = (year1 +"-"+ month1 +"-"+ day1); // Results in "YYYY-MM-DD" for today's date
+                $('.estimateDate').attr('min',maxDate1);
+            }
+
+
+        })
+
+       
+ 
+  });
+});
+
+</script>
+
+
+{% endblock %}

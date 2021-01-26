@@ -1,17 +1,12 @@
-from io import BytesIO, StringIO
+from io import BytesIO
 from django.shortcuts import redirect, render,HttpResponse
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
-from numpy.core.numeric import NaN
-from pandas import io
-from pandas.io import excel
-from mainApp import models
-from mainApp.models import Inventory, Job, Order, Supplier, UserData, StockRequirement
+from mainApp.models import Inventory, Job, Order, ProvisionalSchedule, Supplier, UserData, StockRequirement
 import pandas as pd
-import xlwt
 import xlsxwriter
 from django.core.files.storage import FileSystemStorage
-from django.contrib.auth.models import Permission, User
+from django.contrib.auth.models import User
 from datetime import date, datetime
 # Create your views here.
 def handleLogin(request):
@@ -436,11 +431,12 @@ def provisionalSchedule(request,consoleName):
     for user in userData:
         if not user.permission == consoleName:
             return redirect('consoles')
+    provisionalSchedules = ProvisionalSchedule.objects.all()
     context = {
-        'consoleName':consoleName
+        'consoleName':consoleName,
+        'provisionalSchedule':provisionalSchedules
     }
     return render(request,'pms/provisional_schedule.html',context)
-
 
 
 @login_required(login_url='login')
@@ -484,24 +480,102 @@ def orderUpload(request,consoleName):
                 newOrder = Order(order_type=orderType,sales_order=salesOrderNo,customer_name=customerName,order_date=orderDate,item_code=itemCode,item_delivery_date=deliveryDate,order_qty=orderQuantity,description=description,status='Pending',remaining_days_delivery=remainingDaysForDelivery.days)
                 newOrder.save()
                 inventory = Inventory.objects.filter(item_code = itemCode).first()
-                if inventory:
-                    requiredQty = orderQuantity - inventory.balanced_qty 
-                    print(requiredQty)
-                    if requiredQty>0:
-                        stockRequirement = StockRequirement.objects.filter(order__item_code=itemCode).first()
-                        if stockRequirement:
-                            print('---------------if---------------')
-                            newStockRequirement = StockRequirement(order=newOrder,required_qty= orderQuantity, pending_qty = orderQuantity,recieved_qty=0)
-                            newStockRequirement.save()
-                        else:
-                            requiredQty = (orderQuantity - inventory.balanced_qty )
-                            newStockRequirement = StockRequirement(order=newOrder,required_qty= requiredQty, pending_qty = requiredQty,recieved_qty=0)
-                            newStockRequirement.save()
-                else:
-                    inventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,balanced_qty=0)
+                # For Direct Orders
+                if inventory and orderType == 'Direct':
+                    if orderQuantity>inventory.reserve_qty:
+                        requiredQtyForDirectOrders = orderQuantity - inventory.reserve_qty
+                    else:
+                        requiredQtyForDirectOrders = 0
+                    
+                    if requiredQtyForDirectOrders>0:
+                        newStockRequirement = StockRequirement(order=newOrder,item_code=itemCode,required_qty = requiredQtyForDirectOrders, recieved_qty=0, pending_qty=requiredQtyForDirectOrders)
+                        newStockRequirement.save()
+
+                        newOrder.for_dispatch = orderQuantity - requiredQtyForDirectOrders
+                        newOrder.save()
+                    else:
+                        newOrder.for_dispatch = orderQuantity 
+                        newOrder.save()
+                    inventory.reserve_qty -= orderQuantity
                     inventory.save()
-                    newStockRequirement = StockRequirement(order=newOrder,required_qty= orderQuantity, pending_qty = orderQuantity,recieved_qty=0)
+                    if inventory.reserve_qty<0:
+                        inventory.reserve_qty = 0
+                        inventory.save()
+                elif not inventory and orderType == 'Direct':
+                    newInventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
+                    newInventory.save()
+                    newStockRequirement = StockRequirement(order=newOrder,item_code=itemCode,required_qty = orderQuantity, recieved_qty=0, pending_qty=orderQuantity)
                     newStockRequirement.save()
+                
+                # For Others Orders
+                elif inventory and orderType == 'Others':
+                    if orderQuantity>inventory.reserve_qty:
+                        stockRequirementForOthers = orderQuantity - inventory.reserve_qty
+                    else:
+                        stockRequirementForOthers = 0
+                        newOrder.for_dispatch = orderQuantity 
+                        newOrder.save()
+                    if stockRequirementForOthers>0:
+                        newOrder.for_dispatch = orderQuantity - stockRequirementForOthers
+                        newOrder.save()
+                    else:
+                        newOrder.for_dispatch = orderQuantity
+                        newOrder.save()
+
+
+                    if stockRequirementForOthers > 0:
+                        rawInventory = Inventory.objects.filter(item_code=inventory.item_code[:-2]+'RW').first()
+                        if rawInventory:
+                            if stockRequirementForOthers>rawInventory.reserve_qty:
+                                rawQuantityIsRequired = stockRequirementForOthers - rawInventory.reserve_qty
+                            else:
+                                rawQuantityIsRequired = 0
+                            
+                            if rawQuantityIsRequired>0:
+                                newStockRequirement = StockRequirement(order=newOrder,item_code=rawInventory.item_code,required_qty=rawQuantityIsRequired,pending_qty=rawQuantityIsRequired,recieved_qty=0)
+                                newStockRequirement.save()
+                            rawInventory.reserve_qty -= rawQuantityIsRequired
+                            if rawInventory.reserve_qty < 0:
+                                rawInventory.reserve_qty = 0
+                            rawInventory.save() 
+                        else:
+                            newRawInventory = Inventory(item_code=inventory.item_code[:-2]+'RW',opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
+                            newRawInventory.save()
+                            newStockRequirement = StockRequirement(order=newOrder,item_code=newRawInventory.item_code,required_qty=stockRequirementForOthers,pending_qty=stockRequirementForOthers,recieved_qty=0)
+                            newStockRequirement.save()
+                        
+
+                    
+                    inventory.reserve_qty -= orderQuantity
+                    inventory.save()
+                    if inventory.reserve_qty<0:
+                        inventory.reserve_qty = 0
+                        inventory.save()
+                
+                elif not inventory and orderType == 'Others':
+                    rawInventory = Inventory.objects.filter(item_code=itemCode[:-2]+'RW').first()
+                    if rawInventory:
+                        if orderQuantity>rawInventory.reserve_qty:
+                            rawQuantityIsRequired = orderQuantity - rawInventory.reserve_qty
+                        else:
+                            rawQuantityIsRequired = 0
+                        
+                        if rawQuantityIsRequired>0:
+                            newStockRequirement = StockRequirement(order=newOrder,item_code=rawInventory.item_code,required_qty=rawQuantityIsRequired,pending_qty=rawQuantityIsRequired,recieved_qty=0)
+                            newStockRequirement.save()
+                        rawInventory.reserve_qty -= rawQuantityIsRequired
+                        if rawInventory.reserve_qty < 0:
+                            rawInventory.reserve_qty = 0
+                        rawInventory.save() 
+                    else:
+                        newRawInventory = Inventory(item_code=itemCode[:-2]+'RW',opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
+                        newRawInventory.save()
+
+                        newFinishInventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
+                        newFinishInventory.save()
+
+                        newStockRequirement = StockRequirement(order=newOrder,item_code=rawInventory.item_code,required_qty=orderQuantity,pending_qty=orderQuantity,recieved_qty=0)
+                        newStockRequirement.save()
     return redirect('orderSummary',consoleName)
 
 
@@ -544,7 +618,7 @@ def warehouseInventoryUpload(request,consoleName):
                     addedQty = data['Added Quantity'][i]
                     issuedQty = data['Issued / Dispatched'][i]
                     balanceQty = data['Balance Quantity'][i]
-                    item = Inventory(item_code=itemCode,opening_qty=openingQty,added_qty=addedQty,issued_dispatched_qty=issuedQty,balanced_qty=balanceQty)
+                    item = Inventory(item_code=itemCode,opening_qty=openingQty,added_qty=addedQty,issued_dispatched_qty=issuedQty,balanced_qty=balanceQty,reserve_qty=balanceQty)
                     item.save()
                 except:
                     itemCode = data['Item'][i]
@@ -660,7 +734,6 @@ def addSupplier(request,consoleName):
     return render(request,'pms/add_supplier.html',context)
 
 
-
 @login_required(login_url='login')
 def updateStockRequirement(request,consoleName):
     user = request.user
@@ -690,6 +763,7 @@ def updateStockRequirement(request,consoleName):
             inventory.opening_qty = inventory.balanced_qty
             inventory.added_qty = received_qty
             inventory.balanced_qty += int(received_qty)
+            inventory.reserve_qty = inventory.balanced_qty
             inventory.save() 
             stock.required_qty = int(stock.required_qty) - int(received_qty)
             stock.recieved_qty = received_qty
@@ -700,14 +774,24 @@ def updateStockRequirement(request,consoleName):
         
     return redirect('stockRequirement',consoleName)
 
+
 def orderDispatch(request,consoleName,orderId):
     order = Order.objects.filter(id=orderId).first()
+    inventory = Inventory.objects.filter(item_code=order.item_code).first()
+    rawInventory = Inventory.objects.filter(item_code=order.item_code[:-2]+"RW").first()
+    stockRequirement = StockRequirement.objects.filter(order=order).first()
+    maxToDispatch = order.order_qty
+    if stockRequirement:
+        maxToDispatch -= stockRequirement.required_qty
+        if rawInventory:
+            maxToDispatch -= rawInventory.balanced_qty
+    
     if request.method == 'POST':
         dispatchValue = request.POST['dispatch']
         if dispatchValue == 'dispatchA':
             qty = order.order_qty - order.total_processed_qty
-            order.total_processed_qty = qty
-            order.qty_in_packaging = qty
+            order.total_processed_qty += qty
+            order.qty_in_packaging += qty
             order.status = 'Completed'
             order.completed_date = date.today()
             order.save()
@@ -731,6 +815,7 @@ def orderDispatch(request,consoleName,orderId):
             order.latest_partially_dispatched_qty = qty
             order.latest_partially_dispatched_date = date.today()
             order.partially_dispatched_qty += qty
+            order.for_dispatch -= qty 
             order.total_processed_qty += qty
             order.status = 'Partially Dispatched'
             if order.total_processed_qty == order.order_qty:
@@ -751,11 +836,14 @@ def orderDispatch(request,consoleName,orderId):
             newJob = Job(job_id = id, order=order,department="Packaging",qty=qty,date=date.today())
             newJob.save()
         return redirect('orderSummary',consoleName)
-
+    stockRequirement = StockRequirement.objects.filter(order=order).first()
     context = {
+        'item':inventory,
         'order':order,
+        'maxToDispatch':maxToDispatch,
         'orderId':orderId,
-        'consoleName':consoleName
+        'consoleName':consoleName,
+        'stockRequirement':stockRequirement
     }
     return render(request,'pms/order_dispatch.html',context)
 
@@ -768,6 +856,7 @@ def orderUpdatePaymentStatus(request,consoleName):
         order.payment_staus = status
         order.save()
     return redirect('orderSummary',consoleName)
+
 
 def orderCancel(request,consoleName):
     if request.method == 'POST':
@@ -802,6 +891,7 @@ def uploadStockRequirement(request,consoleName):
                             inventory.added_qty = data.recieved_qty
 
                             inventory.balanced_qty += inventory.added_qty 
+                            inventory.reserve_qty = inventory.balanced_qty
                             inventory.save()
                      
                             if data.recieved_qty < data.required_qty:
@@ -810,6 +900,7 @@ def uploadStockRequirement(request,consoleName):
                         data.save()
                 
     return redirect('stockRequirement',consoleName)
+
 
 def listSupplier(request,consoleName):
     if request.method == 'POST':
@@ -830,3 +921,55 @@ def listSupplier(request,consoleName):
     }
     return render(request,'pms/edit_supplier.html',context)
 
+def orderSchedule(request,consoleName,orderId):
+    if request.method == 'POST':
+        order = Order.objects.filter(id=orderId).first()
+        qty = request.POST['qty']
+        order.total_processed_qty += int(qty)
+        order.qty_in_provisionally_schedule += int(qty)
+        inventory = Inventory.objects.filter(item_code=order.item_code[:-2]+'RW').first()
+        if order.total_processed_qty == order.order_qty:
+            order.status = 'Completed'
+            order.completed_date = date.today()
+        order.save()
+        if inventory.balanced_qty < int(qty):
+            inventory.balanced_qty = 0
+        else:
+            inventory.balanced_qty -= int(qty)
+        inventory.save()
+
+        order.save()
+        pDate = request.POST['date']
+        allJob = Job.objects.all()
+        if not allJob:
+            id = 1
+        else:
+            id = len(allJob)+1
+        id = "000/"+str(id)+"/"+order.order_type
+        newJob = Job(job_id=id,order=order,department='Production',qty=qty,date=date.today())
+        newJob.save()
+        stock = StockRequirement.objects.filter(order=order).first()
+        newProvisionalSchedule = ProvisionalSchedule(job=newJob,order=order,provision_date=pDate,qty=qty,stock=stock)
+        newProvisionalSchedule.save()
+
+    order = Order.objects.filter(id=orderId).first()
+    inventory = Inventory.objects.filter(item_code=order.item_code).first()
+    rawStock = StockRequirement.objects.filter(order=order).first()
+    rawInventory = Inventory.objects.filter(item_code=order.item_code[:-2]+'RW').first()
+    maxToDispatch = order.order_qty
+    if rawStock:
+        maxToDispatch -= rawStock.required_qty
+        if rawInventory:
+            maxToDispatch -= rawInventory.balanced_qty
+
+   
+
+    context = {
+        'consoleName':consoleName,
+        'order':order,
+        'rawInventory':rawInventory,
+        'rawStock':rawStock,
+        'inventory':inventory,
+        'maxToDispatch':maxToDispatch
+    }
+    return render(request,'pms/schedule_provisionally.html',context)

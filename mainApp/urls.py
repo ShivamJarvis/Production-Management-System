@@ -27,6 +27,7 @@ urlpatterns = [
 
 
     path('dashboard/<consoleName>/order/dispatch/<int:orderId>/',views.orderDispatch,name='orderDispatch'),
+    path('dashboard/<consoleName>/order/provisionally/schedule/<int:orderId>/',views.orderSchedule,name='orderSchedule'),
     path('dashboard/<consoleName>/provisional/schedule/',views.provisionalSchedule,name='provisionalSchedule'),
     path('dashboard/<consoleName>/order/history/',views.orderHistory,name='orderHistory'),
     path('dashboard/<consoleName>/order/cancel/',views.orderCancel,name='orderCancel'),

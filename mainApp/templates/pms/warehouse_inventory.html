@@ -30,7 +30,7 @@
                   {% csrf_token %}
                 <div class="mb-3">
                     <label for="formFile" class="form-label">Upload Inventory File in Excel Format</label>
-                    <input class="form-control" name="inventory_file" type="file" id="formFile">
+                    <input class="form-control" name="inventory_file" type="file" id="formFile" required>
                   </div>
                   <button type="submit" class="btn btn-primary">Upload</button>
               </form>
@@ -57,6 +57,7 @@
           <th scope="col">Opening Quantity</th>
           <th scope="col">Added Quantity</th>
           <th scope="col">Issued/Dispatched Quantity</th>
+          <th scope="col">Reserve Quantity</th>
           <th scope="col">Balance Quantity</th>
         </tr>
       </thead>
@@ -68,6 +69,7 @@
           <td> <span class="tableData">{{data.opening_qty}}</span></td>
           <td><span class="tableData">{{data.added_qty}}</span></td>
           <td> <span class="tableData">{{data.issued_dispatched_qty}}</span></td>
+          <td> <span class="tableData">{{data.reserve_qty}}</span></td>
           <td><span class="tableData">{{data.balanced_qty}}</span></td>
           
   

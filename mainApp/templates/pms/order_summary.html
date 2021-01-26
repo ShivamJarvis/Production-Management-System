@@ -153,7 +153,7 @@
       </thead>
       <tbody>
         {% for data in orderData %}
-        {% if not data.qty_in_engineering == data.order_qty and not data.qty_in_buffing == data.order_qty and not data.qty_in_provisionally_schedule == data.order_qty and not data.qty_in_plating == data.order_qty and not data.qty_in_4sbuffing == data.order_qty and not data.qty_in_laquer == data.order_qty and not data.qty_in_packaging == data.order_qty and not data.status == 'Canceled' and not data.completed %}
+        {% if not data.qty_in_engineering == data.order_qty and not data.qty_in_buffing == data.order_qty and not data.qty_in_provisionally_schedule == data.order_qty and not data.qty_in_plating == data.order_qty and not data.qty_in_4sbuffing == data.order_qty and not data.qty_in_laquer == data.order_qty  and not data.status == 'Canceled' and not data.completed %}
 
           {% if data.remaining_days_delivery < 0 %}
           <tr class="table-danger">
@@ -507,14 +507,19 @@
                       </div>
                       <hr>
                       <div class="col-6">
-                        {% if inventory.balanced_qty >= data.order_qty|sub:data.total_processed_qty and data.payment_staus == 'Approved' and data.order_qty > data.total_processed_qty %}
+                        {% if not inventory.balanced_qty == 0  and data.payment_staus == 'Approved' and data.order_qty > data.total_processed_qty %}
                         <a href="{% url 'orderDispatch' consoleName=consoleName orderId=data.id %}" class="btn btn-info">Dispatch Order</a>
                         {% else %}
                         <a  class="btn btn-secondary" aria-disabled="true">Dispatch Order</a>
                         {% endif %}
                       </div>
                       <div class="col-6">
-                        <a href="" class="btn btn-danger">Scheduled Provisionally</a>
+
+                        {% if data.order_qty > data.total_processed_qty and data.payment_staus == 'Approved' %}
+                        <a href="{% url 'orderSchedule' consoleName=consoleName orderId=data.id %}" class="btn btn-danger">Scheduled Provisionally</a>
+                        {% else %}
+                        <a  class="btn btn-secondary">Scheduled Provisionally</a>
+                        {% endif %}
 
                       </div>
                     </div>
@@ -558,32 +563,6 @@
 
 <script>
 
-// $(document).ready(function() {
-//     $('#orderSummaryTable').DataTable( {
-//         initComplete: function () {
-//             this.api().columns().every( function () {
-//                 var column = this;
-//                 var select = $("<select><option value=''></option></select>")
-//                     .appendTo( $(column.footer()).empty() )
-//                     .on( 'change', function () {
-//                         var val = $.fn.dataTable.util.escapeRegex(
-//                             $(this).val()
-//                         );
- 
-//                         column
-//                             .search( val ? '^'+val+'$' : "", true, false )
-//                             .draw();
-//                     } );
- 
-//                 column.data().unique().sort().each( function ( d, j ) {
-//                     select.append( "<option value='"+d+"'>"+d+"</option>" )
-//                 } );
-//             } );
-//         }
-//     } );
-// } );
-
-   
 
 $.fn.dataTable.Api.register('column().searchable()', function() {
   var ctx = this.context[0];

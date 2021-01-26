@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 # Create your models here.
 
 
@@ -56,6 +57,8 @@ class Order(models.Model):
     remarks = models.CharField(max_length=1000,blank=True,null=True)
     completed_date = models.DateField(null=True,blank=True)
     completed = models.BooleanField(default=False)
+    for_dispatch = models.IntegerField(default=0)
+
     def __str__(self):
         return self.sales_order
 
@@ -64,12 +67,14 @@ class Inventory(models.Model):
     opening_qty = models.IntegerField(null=True,blank=True)
     added_qty = models.IntegerField(null=True,blank=True)
     issued_dispatched_qty = models.IntegerField(null=True,blank=True)
+    reserve_qty = models.IntegerField(null=True,blank=True)
     balanced_qty = models.IntegerField(null=True,blank=True)
     def __str__(self):
         return self.item_code
 
 class StockRequirement(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='OrderDetails')
+    item_code = models.CharField(max_length=200,null=True,blank=True)
     required_qty = models.IntegerField(null=True,blank=True)
     stock_category = models.CharField(max_length=500,null=True,blank=True)
     po_number = models.CharField(max_length=300,null=True,blank=True)
@@ -100,4 +105,16 @@ class Job(models.Model):
     date = models.DateField()
     def __str__(self):
         return self.job_id
+
+
+class ProvisionalSchedule(models.Model):
+    job = models.ForeignKey(Job,on_delete=models.CASCADE,related_name='job_data')
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_data')
+    stock = models.ForeignKey(StockRequirement,on_delete=models.CASCADE,related_name='stock_required',null=True,blank=True)
+    provision_date = models.DateField()
+    qty = models.IntegerField()
+    is_finalised = models.BooleanField(default=False)
+    def __str__(self):
+        return self.order.sales_order
+
 

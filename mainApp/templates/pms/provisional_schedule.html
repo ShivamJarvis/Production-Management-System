@@ -10,11 +10,164 @@
 {% block content %}
 
 
+<h2>Provisional Schedules</h2>
+
+
+<div class="mt-4 container" style="overflow-x: auto;">
+<table class="table table-hover mt-4" class="display nowrap" id="provisionalTable">
+    <thead>
+        <tr class="table-dark">
+          <th scope="col">
+          <input type="checkbox" class="form-check-input" id="all" >
+          </th>
+          
+          <th scope="col">Job ID</th>
+          <th scope="col">Order Type</th>
+          <th scope="col">Sales Order Number</th>
+          <th scope="col">Customer Name</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Order Date</th>
+          <th scope="col">Delivery Date</th>
+          <th scope="col">Details</th>
+          <th scope="col">Raw Material Required</th>
+          <th scope="col">Estimate Date</th>
+          <th scope="col">Schedule Date</th>
+
+        </tr>
+        <tr>
+            <td></td>
+            
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+          </thead>
+          <tbody>
+        {% for data in provisionalSchedule %}
+        <tr>
+            <td><input type="checkbox" class="form-check-input" name="schedule" value="{{data.id}}"></td>
+            <td>{{data.job.job_id}}</td>
+            <td>{{data.order.order_type}}</td>
+            <td>{{data.order.sales_order}}</td>
+            <td>{{data.order.customer_name}}</td>
+            <td>{{data.order.item_code}}</td>
+            <td>{{data.order.order_date}}</td>
+            <td>{{data.order.item_delivery_date}}</td>
+            <td>{{data.order.description}}</td>
+            {% if data.stock %}
+            <td>Yes</td>
+            {% if data.stock.stock_inward_estimate_date %}
+            <td>{{data.stock.stock_inward_estimate_date}}</td>
+            {% else %}
+            <td>Not Yet</td>
+            {% endif %}
+
+
+            {% else %}
+            <td>No</td>
+            <td>N/A</td>
+            {% endif %}
+            <td>{{data.provision_date}}</td>
+         </tr>
+         {% endfor %}
+         <tbody>
+         </table>
+
 
 {% endblock %}
 
 {% block js %}
 
+
+<script>
+
+    $.fn.dataTable.Api.register('column().searchable()', function() {
+      var ctx = this.context[0];
+      return ctx.aoColumns[this[0]].bSearchable;
+    });
+    
+    function createDropdowns(api) {
+        api.columns().every(function() {
+            if (this.searchable()) {
+                var that = this;
+                var col = this.index();
+    
+                // Only create if not there or blank
+                var selected = $('thead tr:eq(1) td:eq(' + col + ') select').val();
+                if (selected === undefined || selected === '') {
+                    // Create the `select` element
+                    $('thead tr:eq(1) td')
+                        .eq(col)
+                        .empty();
+                    var select = $('<select><option value=""></option></select>')
+                        .appendTo($('thead tr:eq(1) td').eq(col))
+                        .on('change', function() {
+                            that.search($(this).val()).draw();
+                            createDropdowns(api);
+                        });
+    
+                    api
+                        .cells(null, col, {
+                            search: 'applied'
+                        })
+                        .data()
+                        .sort()
+                        .unique()
+                        .each(function(d) {
+                            select.append($('<option>' + d + '</option>'));
+                        });
+                }
+            }
+        });
+    }
+    
+    $(document).ready(function() {
+        // Create the DataTable
+        var table = $('#provisionalTable').DataTable({
+            orderCellsTop: true,
+            columnDefs: [
+                {
+                    searchable: false,
+                    targets: []
+                }
+            ],
+            initComplete: function() {
+                createDropdowns(this.api());
+            }
+        });
+    });
+    
+       
+        document.getElementById("all").onclick = function(){
+          var orders = document.getElementsByName('order')
+          for(var order of orders){
+            order.checked = this.checked;
+          }
+       }
+    
+       document.getElementById("submit-button").onclick = function(){
+        var orders = document.getElementsByName('order');
+        var orderIds = [0]
+        for(var order of orders){
+          if(order.checked==true){
+            orderIds.push(order.value);
+            document.getElementById("ids").value = orderIds
+          }
+        }
+       }
+      
+       
+      
+    
+    </script>
 
 
 {% endblock %}

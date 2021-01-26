@@ -14,7 +14,11 @@
     <form action="{% url 'orderDispatch' consoleName=consoleName orderId=orderId %}" method="POST">
         {% csrf_token %}
         <div class="form-check mb-4">
+          {% if item.balanced_qty >= order.order_qty|sub:order.total_processed_qty and not stockRequirement %}
             <input class="form-check-input" value="dispatchA" onclick="enableDisableQtyField()" type="radio" name="dispatch" id="dispatch1">
+            {% else %}
+            <input class="form-check-input" value="dispatchA"  type="radio" name="dispatch" disabled>
+            {% endif %}
             <label class="form-check-label" for="dispatch1">
               Dispatch Completely
             </label>
@@ -28,8 +32,11 @@
                     </label>
                   </div>
                   <div class="col-auto">
-
-                    <input type="number" min="1"   id="qty" name="qty" max="{{order.order_qty|sub:order.total_processed_qty}}" class="form-control">
+                    {% if order.for_dispatch == 0 %}
+                    <input type="number" min="0"   id="qty" name="qty" max="{{ order.for_dispatch }}" class="form-control" disabled>
+                    {% else %}
+                    <input type="number" min="1"   id="qty" name="qty" max="{{ order.for_dispatch }}" class="form-control">
+                    {% endif %}
                   </div>
               </div>
         
