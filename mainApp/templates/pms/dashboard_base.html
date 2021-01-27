@@ -99,6 +99,64 @@
 
 					{% endif %}
 
+					{% if consoleName == 'Buffing' %}
+
+					<li class="sidebar-item {% block buffingOrder %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'buffingOrders' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Orders</span>
+						</a>
+					</li>
+					{% endif %}
+
+
+					{% if consoleName == 'Plating' %}
+
+					<li class="sidebar-item {% block platingOrder %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'platingOrders' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Orders</span>
+						</a>
+					</li>
+					{% endif %}
+
+					{% if consoleName == '4S Buffing' %}
+
+					<li class="sidebar-item {% block sBuffingOrder %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'sBuffingOrders' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Orders</span>
+						</a>
+					</li>
+					{% endif %}
+
+
+					{% if consoleName == 'Laquer' %}
+
+					<li class="sidebar-item {% block laquerOrder %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'laquerOrders' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Orders</span>
+						</a>
+					</li>
+					{% endif %}
+
+
+					{% if consoleName == 'Engineering' %}
+
+					<li class="sidebar-item {% block engineeringOrder %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'engineeringOrders' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Orders</span>
+						</a>
+					</li>
+					{% endif %}
+
+
+					{% if consoleName == 'Packaging' %}
+
+					<li class="sidebar-item {% block packagingOrder %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'packagingOrders' consoleName=consoleName %}">
+							<i class="fas fa-store-alt"></i> <span class="align-middle">Orders</span>
+						</a>
+					</li>
+					{% endif %}
+
 
 				
 

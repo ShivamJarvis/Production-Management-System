@@ -390,7 +390,7 @@ def orderSummary(request,consoleName):
             return redirect('consoles')
     
     orderData = Order.objects.all()
-    inventoryDetails = Inventory.objects.all()
+
     salesOrder =[]
     customerName = []
     itemCode = []
@@ -416,7 +416,7 @@ def orderSummary(request,consoleName):
     context = {
         'consoleName':consoleName,
         'orderData':orderData,
-        'inventoryDetails':inventoryDetails,
+     
         'customerName':customerName,
         'salesOrder':salesOrder,
         'itemCode':itemCode
@@ -432,11 +432,18 @@ def provisionalSchedule(request,consoleName):
         if not user.permission == consoleName:
             return redirect('consoles')
     provisionalSchedules = ProvisionalSchedule.objects.all()
+    for data in provisionalSchedules:
+        stockRequirement = StockRequirement.objects.filter(order=data.order).first()
+        if stockRequirement:
+            if stockRequirement.pending_qty < data.qty:
+                data.is_material_required = False
+                data.save()
     context = {
         'consoleName':consoleName,
         'provisionalSchedule':provisionalSchedules
     }
     return render(request,'pms/provisional_schedule.html',context)
+
 
 
 @login_required(login_url='login')
@@ -446,8 +453,11 @@ def orderHistory(request,consoleName):
     for user in userData:
         if not user.permission == consoleName:
             return redirect('consoles')
+    orderData = Order.objects.all()
+
     context = {
-        'consoleName':consoleName
+        'consoleName':consoleName,
+        'orderData':orderData
     }
     return render(request,'pms/order_history.html',context)
 
@@ -482,6 +492,8 @@ def orderUpload(request,consoleName):
                 inventory = Inventory.objects.filter(item_code = itemCode).first()
                 # For Direct Orders
                 if inventory and orderType == 'Direct':
+                    newOrder.inventory = inventory
+                    newOrder.save()
                     if orderQuantity>inventory.reserve_qty:
                         requiredQtyForDirectOrders = orderQuantity - inventory.reserve_qty
                     else:
@@ -504,11 +516,15 @@ def orderUpload(request,consoleName):
                 elif not inventory and orderType == 'Direct':
                     newInventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
                     newInventory.save()
+                    newOrder.inventory = newInventory
+                    newOrder.save()
                     newStockRequirement = StockRequirement(order=newOrder,item_code=itemCode,required_qty = orderQuantity, recieved_qty=0, pending_qty=orderQuantity)
                     newStockRequirement.save()
                 
                 # For Others Orders
                 elif inventory and orderType == 'Others':
+                    newOrder.inventory = inventory
+                    newOrder.save()
                     if orderQuantity>inventory.reserve_qty:
                         stockRequirementForOthers = orderQuantity - inventory.reserve_qty
                     else:
@@ -553,6 +569,10 @@ def orderUpload(request,consoleName):
                         inventory.save()
                 
                 elif not inventory and orderType == 'Others':
+                    newFinishInventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
+                    newFinishInventory.save()
+                    newOrder.inventory = newFinishInventory
+                    newOrder.save()
                     rawInventory = Inventory.objects.filter(item_code=itemCode[:-2]+'RW').first()
                     if rawInventory:
                         if orderQuantity>rawInventory.reserve_qty:
@@ -570,11 +590,7 @@ def orderUpload(request,consoleName):
                     else:
                         newRawInventory = Inventory(item_code=itemCode[:-2]+'RW',opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
                         newRawInventory.save()
-
-                        newFinishInventory = Inventory(item_code=itemCode,opening_qty=0,added_qty=0,issued_dispatched_qty=0,reserve_qty=0,balanced_qty=0)
-                        newFinishInventory.save()
-
-                        newStockRequirement = StockRequirement(order=newOrder,item_code=rawInventory.item_code,required_qty=orderQuantity,pending_qty=orderQuantity,recieved_qty=0)
+                        newStockRequirement = StockRequirement(order=newOrder,item_code=newRawInventory.item_code,required_qty=orderQuantity,pending_qty=orderQuantity,recieved_qty=0)
                         newStockRequirement.save()
     return redirect('orderSummary',consoleName)
 
@@ -763,18 +779,19 @@ def updateStockRequirement(request,consoleName):
             inventory.opening_qty = inventory.balanced_qty
             inventory.added_qty = received_qty
             inventory.balanced_qty += int(received_qty)
-            inventory.reserve_qty = inventory.balanced_qty
             inventory.save() 
             stock.required_qty = int(stock.required_qty) - int(received_qty)
-            stock.recieved_qty = received_qty
-            
+            stock.recieved_qty += int(received_qty)
+            stock.order.for_dispatch += int(received_qty)
+            stock.order.save()
+            stock.pending_qty -= int(received_qty) 
         if po_num:
             stock.po_number = po_num
         stock.save()
         
     return redirect('stockRequirement',consoleName)
 
-
+@login_required(login_url='login')
 def orderDispatch(request,consoleName,orderId):
     order = Order.objects.filter(id=orderId).first()
     inventory = Inventory.objects.filter(item_code=order.item_code).first()
@@ -818,7 +835,7 @@ def orderDispatch(request,consoleName,orderId):
             order.for_dispatch -= qty 
             order.total_processed_qty += qty
             order.status = 'Partially Dispatched'
-            if order.total_processed_qty == order.order_qty:
+            if order.qty_in_packaging == order.order_qty:
                 order.status = 'Completed'
                 order.completed_date = date.today()
             order.save()
@@ -847,7 +864,7 @@ def orderDispatch(request,consoleName,orderId):
     }
     return render(request,'pms/order_dispatch.html',context)
 
-
+@login_required(login_url='login')
 def orderUpdatePaymentStatus(request,consoleName):
     if request.method=='POST':
         id = request.POST['id']
@@ -857,7 +874,7 @@ def orderUpdatePaymentStatus(request,consoleName):
         order.save()
     return redirect('orderSummary',consoleName)
 
-
+@login_required(login_url='login')
 def orderCancel(request,consoleName):
     if request.method == 'POST':
         allId = request.POST['ids']
@@ -865,10 +882,15 @@ def orderCancel(request,consoleName):
         for id in allId:
             order = Order.objects.filter(id=int(id)).first()
             order.status = "Canceled"
+            try:
+                stock = StockRequirement.objects.filter(order=order).first()
+                stock.delete()
+            except:
+                pass
             order.save()
     return redirect('orderSummary',consoleName)
 
-
+@login_required(login_url='login')
 def uploadStockRequirement(request,consoleName):
     if request.method == 'POST':
         stockRequirement = StockRequirement.objects.all()
@@ -901,7 +923,7 @@ def uploadStockRequirement(request,consoleName):
                 
     return redirect('stockRequirement',consoleName)
 
-
+@login_required(login_url='login')
 def listSupplier(request,consoleName):
     if request.method == 'POST':
         id = request.POST['id']
@@ -921,36 +943,42 @@ def listSupplier(request,consoleName):
     }
     return render(request,'pms/edit_supplier.html',context)
 
+@login_required(login_url='login')
 def orderSchedule(request,consoleName,orderId):
     if request.method == 'POST':
         order = Order.objects.filter(id=orderId).first()
-        qty = request.POST['qty']
-        order.total_processed_qty += int(qty)
-        order.qty_in_provisionally_schedule += int(qty)
-        inventory = Inventory.objects.filter(item_code=order.item_code[:-2]+'RW').first()
-        if order.total_processed_qty == order.order_qty:
-            order.status = 'Completed'
-            order.completed_date = date.today()
-        order.save()
-        if inventory.balanced_qty < int(qty):
-            inventory.balanced_qty = 0
-        else:
-            inventory.balanced_qty -= int(qty)
-        inventory.save()
-
-        order.save()
-        pDate = request.POST['date']
-        allJob = Job.objects.all()
-        if not allJob:
-            id = 1
-        else:
-            id = len(allJob)+1
-        id = "000/"+str(id)+"/"+order.order_type
-        newJob = Job(job_id=id,order=order,department='Production',qty=qty,date=date.today())
-        newJob.save()
-        stock = StockRequirement.objects.filter(order=order).first()
-        newProvisionalSchedule = ProvisionalSchedule(job=newJob,order=order,provision_date=pDate,qty=qty,stock=stock)
-        newProvisionalSchedule.save()
+        qty = int(request.POST['qty'])
+        from_inventory = False
+        if qty>0:
+            order.total_processed_qty += int(qty)
+            order.qty_in_provisionally_schedule += int(qty)
+            inventory = Inventory.objects.filter(item_code=order.item_code[:-2]+'RW').first()
+            
+            if inventory.balanced_qty < int(qty):
+                inventory.balanced_qty = 0
+            else:
+                from_inventory = True
+                inventory.opening_qty = inventory.balanced_qty
+                inventory.issued_dispatched_qty = int(qty)
+                inventory.balanced_qty -= int(qty)
+            inventory.save()
+            order.save()
+            pDate = request.POST['date']
+            allJob = Job.objects.all()
+            if not allJob:
+                id = 1
+            else:
+                id = len(allJob)+1
+            id = "000/"+str(id)+"/"+order.order_type
+            newJob = Job(job_id=id,order=order,department='Production',qty=qty,date=date.today())
+            newJob.save()
+            stock = StockRequirement.objects.filter(order=order).first()
+            stock_required=False
+            if stock:
+                if stock.stock_inward_estimate_date:
+                    stock_required=True
+            newProvisionalSchedule = ProvisionalSchedule(job=newJob,order=order,provision_date=pDate,qty=qty,stock=stock,is_material_required=stock_required,from_inventory=from_inventory)
+            newProvisionalSchedule.save()
 
     order = Order.objects.filter(id=orderId).first()
     inventory = Inventory.objects.filter(item_code=order.item_code).first()
@@ -973,3 +1001,230 @@ def orderSchedule(request,consoleName,orderId):
         'maxToDispatch':maxToDispatch
     }
     return render(request,'pms/schedule_provisionally.html',context)
+
+@login_required(login_url='login')
+def deleteProvisionalSchedule(request,consoleName):
+    if request.method == 'POST':
+        try:
+            provsionalId = request.POST['selectedJobs'].split(',')
+            for id in provsionalId:
+                provisionalSchedule = ProvisionalSchedule.objects.filter(id=id).first()
+                if not provisionalSchedule.from_inventory: # Based on Estimate Date
+                    provisionalSchedule.order.total_processed_qty -= provisionalSchedule.qty
+                    provisionalSchedule.order.qty_in_provisionally_schedule -= provisionalSchedule.qty
+                    provisionalSchedule.order.status = 'Pending'
+                    provisionalSchedule.order.save()
+                    provisionalSchedule.job.delete()
+                    provisionalSchedule.delete()
+                else: # Not Based on Estimate Date, Actually Raw Inventory is available
+                    provisionalSchedule.order.total_processed_qty -= provisionalSchedule.qty
+                    provisionalSchedule.order.qty_in_provisionally_schedule -= provisionalSchedule.qty
+                    inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code[:-2]+"RW").first()
+                    inventory.opening_qty = inventory.balanced_qty
+                    inventory.added_qty = provisionalSchedule.qty
+                    inventory.issued_dispatched_qty -= provisionalSchedule.qty
+                    inventory.balanced_qty = (inventory.opening_qty + inventory.added_qty)
+                    inventory.save() 
+                    provisionalSchedule.order.status = 'Pending'
+                    provisionalSchedule.order.save()
+                    # provisionalSchedule.job.delete()
+                    provisionalSchedule.is_canceled = True
+                    provisionalSchedule.save()
+        except:
+            pass
+    return redirect('provisionalSchedule',consoleName)
+
+@login_required(login_url='login')
+def finalProvisionalSchedule(request,consoleName):
+    if request.method == 'POST':
+      
+        provisionalId = request.POST['selectedJobs'].split(',')
+        for id in provisionalId:
+            provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+            if provisionalSchedule.order.order_type == 'Engineering' and not provisionalSchedule.is_material_required:
+                provisionalSchedule.order.qty_in_engineering += provisionalSchedule.qty
+                provisionalSchedule.order.qty_in_provisionally_schedule -= provisionalSchedule.qty
+                provisionalSchedule.job.department = 'Engineering'
+                provisionalSchedule.is_finalised = True
+                provisionalSchedule.final_date = date.today()
+                provisionalSchedule.save()
+                provisionalSchedule.order.save()
+                provisionalSchedule.job.save()
+
+            elif provisionalSchedule.order.order_type == 'Others' and not provisionalSchedule.is_material_required:
+                provisionalSchedule.order.qty_in_buffing += provisionalSchedule.qty
+                provisionalSchedule.order.qty_in_provisionally_schedule -= provisionalSchedule.qty
+                provisionalSchedule.job.department = 'Buffing'
+                provisionalSchedule.is_finalised = True
+                provisionalSchedule.final_date = date.today()
+                provisionalSchedule.save()
+                provisionalSchedule.order.save()
+                provisionalSchedule.job.save()
+      
+          
+    return redirect('provisionalSchedule',consoleName)
+
+@login_required(login_url='login')
+def orderUpdateType(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        orderType = request.POST['order_type']
+        order = Order.objects.filter(id=id).first()
+        order.order_type = orderType
+        order.save()
+    return redirect('orderSummary',consoleName)
+
+@login_required(login_url='login')
+def buffingOrders(request,consoleName):
+    provisionalData = ProvisionalSchedule.objects.filter(final_date=date.today()).all()
+    context = {
+        'consoleName':consoleName,
+        'provisionalData':provisionalData
+    }
+    return render(request,'pms/buffing_orders.html',context)
+
+
+@login_required(login_url='login')
+def completeBuffingOrders(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+        provisionalSchedule.job.department = 'Plating'
+        provisionalSchedule.order.qty_in_buffing -= provisionalSchedule.job.qty
+        provisionalSchedule.order.qty_in_plating += provisionalSchedule.job.qty
+        provisionalSchedule.order.save()
+        provisionalSchedule.job.save()
+
+    return redirect('buffingOrders',consoleName)
+
+@login_required(login_url='login')
+def platingOrders(request,consoleName):
+    provisionalData = ProvisionalSchedule.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'provisionalData':provisionalData
+    }
+    return render(request,'pms/plating_orders.html',context)
+
+@login_required(login_url='login')
+def completePlatingOrders(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+        provisionalSchedule.job.department = '4S Buffing'
+        provisionalSchedule.order.qty_in_plating -= provisionalSchedule.job.qty
+        provisionalSchedule.order.qty_in_4sbuffing += provisionalSchedule.job.qty
+        provisionalSchedule.order.save()
+        provisionalSchedule.job.save()
+
+    return redirect('buffingOrders',consoleName)
+
+@login_required(login_url='login')
+def sBuffingOrders(request,consoleName):
+    provisionalData = ProvisionalSchedule.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'provisionalData':provisionalData
+    }
+    return render(request,'pms/sBuffing.html',context)
+
+@login_required(login_url='login')
+def complete4SBuffingOrders(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+        provisionalSchedule.job.department = 'Laquer'
+        provisionalSchedule.order.qty_in_4sbuffing -= provisionalSchedule.job.qty
+        provisionalSchedule.order.qty_in_laquer += provisionalSchedule.job.qty
+        provisionalSchedule.order.save()
+        provisionalSchedule.job.save()
+
+    return redirect('sBuffingOrders',consoleName)
+
+@login_required(login_url='login')
+def laquerOrders(request,consoleName):
+    provisionalData = ProvisionalSchedule.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'provisionalData':provisionalData
+    }
+    return render(request,'pms/laquer_order.html',context)
+
+@login_required(login_url='login')
+def completeLaquerOrders(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+        provisionalSchedule.job.department = 'Packaging'
+        provisionalSchedule.order.qty_in_laquer -= provisionalSchedule.job.qty
+        provisionalSchedule.order.qty_in_packaging += provisionalSchedule.job.qty
+        provisionalSchedule.order.save()
+        provisionalSchedule.job.save()
+    return redirect('laquerOrders',consoleName)
+
+@login_required(login_url='login')
+def engineeringOrders(request,consoleName):
+    provisionalData = ProvisionalSchedule.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'provisionalData':provisionalData
+    }
+    return render(request,'pms/engineering_order.html',context)
+
+@login_required(login_url='login')
+def completeEngineeringOrders(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+        provisionalSchedule.job.department = 'Packaging'
+        provisionalSchedule.order.qty_in_engineering -= provisionalSchedule.job.qty
+        provisionalSchedule.order.qty_in_packaging += provisionalSchedule.job.qty
+        provisionalSchedule.order.save()
+        provisionalSchedule.job.save()
+    return redirect('engineeringOrders',consoleName)
+
+@login_required(login_url='login')
+def packagingOrders(request,consoleName):
+    jobData = Job.objects.filter(department='Packaging').all()
+    context = {
+        'consoleName':consoleName,
+        'jobData':jobData
+    }
+    return render(request,'pms/packaging_order.html',context)
+
+@login_required(login_url='login')
+def completePackagingOrders(request,consoleName):
+
+    if request.method == 'POST':
+        id = request.POST['id']
+        job = Job.objects.filter(id=int(id)).first()
+        job.department = "Completed"
+        job.save()
+        if job.order.order_qty == job.order.qty_in_packaging:
+            job.order.status = "Completed"
+            job.order.completed_date = date.today()
+            job.order.save()
+    return redirect('packagingOrders',consoleName)
+
+def updateProvisionalSchedule(request,consoleName):
+    if request.method == 'POST':
+        qty = int(request.POST['qty'])
+        date = request.POST['date']
+        id = request.POST['id']
+        provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
+        provisionalSchedule.provision_date = date
+        if not provisionalSchedule.qty == qty:
+            provisionalSchedule.qty = qty
+            provisionalSchedule.job.qty = qty
+            provisionalSchedule.order.total_processed_qty -= qty
+            provisionalSchedule.order.qty_in_provisionally_schedule -= qty
+            provisionalSchedule.order.save()
+            provisionalSchedule.job.save()
+            if provisionalSchedule.from_inventory:
+                inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code[:-2]+'RW').first()
+                inventory.opening_qty = inventory.balanced_qty
+                inventory.added_qty += qty
+                inventory.issued_dispatched_qty -= qty
+                inventory.balanced_qty = (inventory.opening_qty + inventory.added_qty)
+                inventory.save()
+    return redirect('provisionalSchedule',consoleName)

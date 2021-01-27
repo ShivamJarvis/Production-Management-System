@@ -1,0 +1,74 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block engineeringOrder %}active{% endblock %}
+
+{% block css %}
+
+
+{% endblock %}
+
+{% block content %}
+
+
+<h1>Orders</h1>
+
+<div class="mt-4 container" style="overflow-x: auto;">
+    <table class="table table-hover mt-4" class="display nowrap" id="orderSummaryTable">
+        <thead>
+            <tr class="table-dark">
+              
+              <th scope="col">Job ID</th>
+              <th scope="col">Order Type</th>
+              <th scope="col">Sales Order Number</th>
+              <th scope="col">Customer Name</th>
+              <th scope="col">Item Code</th>
+              <th scope="col">Order Quantity</th>
+              <th scope="col">Quantity In Engineering</th>
+              <th scope="col">Order Date</th>
+              <th scope="col">Delivery Date</th>
+              <th scope="col">Complete</th>
+            </tr>
+            
+          </thead>
+          <tbody>
+            {% for data in provisionalData %}
+            {% if data.order.qty_in_engineering > 0 and data.is_finalised and data.order.order_type == 'Engineering' and data.job.department == 'Engineering' %}
+       <tr>
+                <td>{{data.job.job_id}}</td>
+              <td> {{data.order.order_type}}</td>
+              <td> {{data.order.sales_order}}</td>
+              <td>{{data.order.customer_name}}</td>
+    
+              <td> {{data.order.item_code}}</td>
+              <td>{{data.order.order_qty}}</td>
+              <td>{{data.qty}}</td>
+              <td>{{data.order.order_date}}</td>
+              <td>{{data.order.item_delivery_date}}</td>
+              <td>
+                  
+                <form action="{% url 'completeEngineeringOrders' consoleName=consoleName %}" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="id" value="{{data.id}}">
+                    <button type="submit" class="btn btn-primary">Complete</button>
+                </form>
+              </td>
+      
+              
+            </tr>
+
+            {% endif %}
+
+          {% endfor %}
+          
+          </tbody>
+         
+      </table>
+    </div>
+    
+
+
+{% endblock %}
+
+{% block js %}
+
+
+{% endblock %}

@@ -13,6 +13,15 @@ payment_status_options = (
     ('Approved','Approved'),
     ('Not Approved','Not Approved'),
 )
+class Inventory(models.Model):
+    item_code = models.CharField(max_length=200,null=True,blank=True)
+    opening_qty = models.IntegerField(null=True,blank=True)
+    added_qty = models.IntegerField(null=True,blank=True)
+    issued_dispatched_qty = models.IntegerField(null=True,blank=True)
+    reserve_qty = models.IntegerField(null=True,blank=True)
+    balanced_qty = models.IntegerField(null=True,blank=True)
+    def __str__(self):
+        return self.item_code
 
 class Order(models.Model):
     sales_order = models.CharField(max_length=400)
@@ -58,19 +67,12 @@ class Order(models.Model):
     completed_date = models.DateField(null=True,blank=True)
     completed = models.BooleanField(default=False)
     for_dispatch = models.IntegerField(default=0)
+    inventory = models.ForeignKey(Inventory,null=True,blank=True,on_delete=models.CASCADE)
 
     def __str__(self):
         return self.sales_order
 
-class Inventory(models.Model):
-    item_code = models.CharField(max_length=200,null=True,blank=True)
-    opening_qty = models.IntegerField(null=True,blank=True)
-    added_qty = models.IntegerField(null=True,blank=True)
-    issued_dispatched_qty = models.IntegerField(null=True,blank=True)
-    reserve_qty = models.IntegerField(null=True,blank=True)
-    balanced_qty = models.IntegerField(null=True,blank=True)
-    def __str__(self):
-        return self.item_code
+
 
 class StockRequirement(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='OrderDetails')
@@ -85,6 +87,7 @@ class StockRequirement(models.Model):
     pending_qty = models.IntegerField(null=True,blank=True)
     def __str__(self):
         return self.order.customer_name
+
 
 class Supplier(models.Model):
     name = models.CharField(max_length=200)
@@ -112,9 +115,13 @@ class ProvisionalSchedule(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_data')
     stock = models.ForeignKey(StockRequirement,on_delete=models.CASCADE,related_name='stock_required',null=True,blank=True)
     provision_date = models.DateField()
+    final_date = models.DateField(null=True,blank=True)
     qty = models.IntegerField()
     is_finalised = models.BooleanField(default=False)
+    is_canceled = models.BooleanField(default=False)
+    is_material_required = models.BooleanField(default=False)
+    from_inventory = models.BooleanField(default=False)
     def __str__(self):
-        return self.order.sales_order
+        return str(self.id)+". "+self.order.sales_order
 
 

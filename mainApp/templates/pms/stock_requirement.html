@@ -112,7 +112,7 @@
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
                       {% if data.stock_inward_estimate_date %}
-                        <input type="date" name="estimate_date" class="form-control">
+                        <input type="date" value="{{ data.stock_inward_estimate_date|date:'Y-m-d' }}" name="estimate_date" class="form-control" id="estDate">
                         {% else %}
                         <input type="date" name="estimate_date" class="form-control">
 
@@ -128,7 +128,7 @@
                         Actual Delivery Date
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
-                        <input type="date" name="actual_date" class="form-control">
+                        <input type="date" value="{{ data.latest_stock_inward_actual_date|date:'Y-m-d' }}" id="actDate" name="actual_date" class="form-control">
                     </div>
                 </div>
             </div>
@@ -141,7 +141,11 @@
                     <div class="col-lg-6 col-md-6 col-sm-12">
                         <select name="supplier_name" class="form-control">
                             {% for supplier in suppliers %}
+                            {% if data.supplier_name == supplier.name %}
+                            <option value="{{data.supplier_name}}">{{data.supplier_name}}</option>
+                            {% else %}
                             <option value="{{supplier.name}}">{{supplier.name}}</option>
+                            {% endif %}
                             {% endfor %}
                             
 
@@ -155,7 +159,7 @@
                         Quantity Recieved
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
-                        <input type="number" name="qty_recieved" class="form-control" value="0" min="0" max="{{data.required_qty}}">
+                        <input type="number" name="qty_recieved" class="form-control" value="{{data.recieved_qty}}" min="0" max="{{data.required_qty}}">
                     </div>
                 </div>
             </div>
@@ -166,7 +170,7 @@
                         P.O. Number
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
-                        <input type="text" name="po_num" class="form-control" >
+                        <input type="text" name="po_num" value="{{data.po_number}}" class="form-control" >
                     </div>
                 </div>
             </div>
@@ -205,7 +209,24 @@
 $(document).ready( function () {
     $('#inventoryTable').DataTable( {
     });
+    var todaysDate = new Date(); // Gets today's date
+     
+     // Max date attribute is in "YYYY-MM-DD".  Need to format today's date accordingly
+     
+     var year = todaysDate.getFullYear(); 						// YYYY
+     var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)	// MM
+   
+     var day = ("0" + todaysDate.getDate()).slice(-2);			// DD
+
+      var minDate = (year +"-"+ month +"-"+ day); // Results in "YYYY-MM-DD" for today's date 
+      $('#estDate').attr('min',minDate)
+      $('#actDate').attr('min',minDate)
+
     } );
+
+
+    
+
 </script>
 
 {% endblock %}

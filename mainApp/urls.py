@@ -29,9 +29,16 @@ urlpatterns = [
     path('dashboard/<consoleName>/order/dispatch/<int:orderId>/',views.orderDispatch,name='orderDispatch'),
     path('dashboard/<consoleName>/order/provisionally/schedule/<int:orderId>/',views.orderSchedule,name='orderSchedule'),
     path('dashboard/<consoleName>/provisional/schedule/',views.provisionalSchedule,name='provisionalSchedule'),
+
+    path('dashboard/<consoleName>/provisional/schedule/delete/',views.deleteProvisionalSchedule,name='deleteProvisionalSchedule'),
+    path('dashboard/<consoleName>/provisional/schedule/update/',views.updateProvisionalSchedule,name='updateProvisionalSchedule'),
+
+    path('dashboard/<consoleName>/provisional/schedule/final/',views.finalProvisionalSchedule,name='finalProvisionalSchedule'),
+
     path('dashboard/<consoleName>/order/history/',views.orderHistory,name='orderHistory'),
     path('dashboard/<consoleName>/order/cancel/',views.orderCancel,name='orderCancel'),
     path('dashboard/<consoleName>/order/update/payment/status/',views.orderUpdatePaymentStatus,name='orderUpdatePaymentStatus'),
+    path('dashboard/<consoleName>/order/update/order/type/',views.orderUpdateType,name='orderUpdateType'),
     # For Order File Upload
     path('dashboard/<consoleName>/order/upload/',views.orderUpload,name='orderUpload'),
 
@@ -43,4 +50,32 @@ urlpatterns = [
     path('dashboard/<consoleName>/inventory/upload/',views.warehouseInventoryUpload,name='warehouseInventoryUpload'),
     path('export/excel/inventory/', views.exportInventoryExcel,name='exportInventoryExcel'),
     path('export/excel/stock/', views.exportStockExcel,name='exportStockExcel'),
+
+
+    # For Buffing Department
+    path('dashboard/<consoleName>/order/buv87u/',views.buffingOrders,name='buffingOrders'),
+    path('dashboard/<consoleName>/order/buv87u/complete/',views.completeBuffingOrders,name='completeBuffingOrders'),
+
+    # For Plating Department
+    path('dashboard/<consoleName>/order/buv835ww2w37u/',views.platingOrders,name='platingOrders'),
+    path('dashboard/<consoleName>/order/buv87412u/complete/',views.completePlatingOrders,name='completePlatingOrders'),
+
+
+    # For 4S Buffing Department
+    path('dashboard/<consoleName>/order/buffing4s/',views.sBuffingOrders,name='sBuffingOrders'),
+    path('dashboard/<consoleName>/order/buv84sbuff/complete/',views.complete4SBuffingOrders,name='complete4SBuffingOrders'),
+
+
+    # For Laquer Department
+    path('dashboard/<consoleName>/order/slsaquedasrj23j/',views.laquerOrders,name='laquerOrders'),
+    path('dashboard/<consoleName>/order/buv84slaq/complete/',views.completeLaquerOrders,name='completeLaquerOrders'),
+
+
+    # For Engineering Department
+    path('dashboard/<consoleName>/order/slsaqeng/',views.engineeringOrders,name='engineeringOrders'),
+    path('dashboard/<consoleName>/order/buv84engaq/complete/',views.completeEngineeringOrders,name='completeEngineeringOrders'),
+
+    # For Packaging Department
+    path('dashboard/<consoleName>/order/pack/',views.packagingOrders,name='packagingOrders'),
+    path('dashboard/<consoleName>/order/pack/complete/',views.completePackagingOrders,name='completePackagingOrders'),
 ] 

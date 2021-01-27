@@ -9,6 +9,283 @@
 {% block content %}
 
 
+<h1>Order history</h1>
+
+<div class="mt-4 container" style="overflow-x: auto;">
+    <table class="table table-hover mt-4" class="display nowrap" id="orderSummaryTable">
+        <thead>
+            <tr class="table-dark">
+              
+              <th scope="col">Order Type</th>
+              <th scope="col">Sales Order Number</th>
+              <th scope="col">Customer Name</th>
+              <th scope="col">Item Code</th>
+              <th scope="col">Order Quantity</th>
+              <th scope="col">Order Date</th>
+              <th scope="col">Delivery Date</th>
+              <th scope="col">Status</th>
+              <th scope="col">Details</th>
+            </tr>
+            
+          </thead>
+          <tbody>
+            {% for data in orderData %}
+            {% if data.completed or data.status == 'Canceled' %}
+       <tr>
+    
+             
+              <td> {{data.order_type}}</td>
+              <td> {{data.sales_order}}</td>
+              <td>{{data.customer_name}}</td>
+    
+              <td> {{data.item_code}}</td>
+              <td>{{data.order_qty}}</td>
+              <td>{{data.order_date}}</td>
+              <td>{{data.item_delivery_date}}</td>
+              <td>{{data.status}}</td>
+              <td>
+    
+    
+                <!-- Button trigger modal -->
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{data.id}}">
+      Details
+    </button>
+    
+    <!-- Modal -->
+    <div class="modal fade" id="staticBackdrop{{data.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel{{data.id}}" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel{{data.id}}">Sales Order Id {{data.sales_order}} with Item Code {{data.item_code}}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            
+            <div class="row">
+    
+              <div class="col-6 mb-3">
+                <strong>Order Type</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.order_type}}
+              </div>
+              
+              <div class="col-6 mb-3">
+               <strong>Sales Order Number</strong>
+              </div>
+    
+              <div class="col-6 mb-3">
+                {{data.sales_order}}
+              </div>
+              
+              <div class="col-6 mb-3">
+               <strong>Customer Name</strong>
+              </div>
+    
+              <div class="col-6 mb-3">
+                {{data.customer_name}}
+              </div>
+              
+              <div class="col-6 mb-3">
+                <strong>Item Code</strong>
+              </div>
+    
+              <div class="col-6 mb-3">
+                {{data.item_code}}
+              </div>
+              
+              <div class="col-6 mb-3">
+                <strong>Description</strong>
+              </div>
+    
+    
+              <div class="col-6 mb-3">
+                {{data.description}}
+              </div>
+              
+              <div class="col-6 mb-3">
+                <strong>Order Quantity</strong>
+              </div>
+    
+              <div class="col-6 mb-3">
+                {{data.order_qty}}
+              </div>
+              
+              <div class="col-6 mb-3">
+                <strong>Order Date</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.order_date}}
+              </div>
+    
+    
+              <div class="col-6 mb-3">
+                <strong>Delievery Date</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.item_delivery_date}}
+              </div>
+    
+              <div class="col-6 mb-3">
+              <strong>Status</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.status}}
+              </div>
+    
+            
+    
+    
+              <div class="col-6 mb-3">
+                <strong>Total Process Quantity</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.total_processed_qty}}
+              </div>
+    
+    
+              <div class="col-6 mb-3">
+                <strong>Partially Dispatch Quantity</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.partially_dispatched_qty}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Latest Partially Dispatch Date</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.latest_partially_dispatched_date}}
+              </div>
+    
+             
+    
+              <div class="col-6 mb-3">
+               <strong>Quantity in Engineering</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_engineering}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Quantity in Provisional Schedule</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_provisionally_schedule}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Quantity in Buffing</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_buffing}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Quantity in Plating</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_plating}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Quantity in 4S Buffing</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_4sbuffing}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Quantity in Laquer</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_laquer}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Quantity in Packaging</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.qty_in_packaging}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Packaged Quantity</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.total_packaged_qty}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Latest Packaging Date</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.latest_packaging_date}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Total Package Quantity</strong>   
+              </div>
+              <div class="col-6 mb-3">
+                {{data.total_packaged_qty}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Cumulated Invoiced Quantity</strong> 
+              </div>
+              <div class="col-6 mb-3">
+                {{data.cumulated_invoice_qty}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Latest Invoice Date</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.latest_invoice_date}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Remaining Quantity</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.remaining_qty}}
+              </div>
+    
+              <div class="col-6 mb-3">
+                <strong>Remarks</strong>
+              </div>
+              <div class="col-6 mb-3">
+                {{data.remarks}}
+              </div>
+    
+    
+    
+            </div>
+    
+    
+    
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+           
+          </div>
+        </div>
+      </div>
+    </div>
+    
+              </td>
+             
+            </tr>
+            {% endif %}
+          {% endfor %}
+          
+          </tbody>
+         
+      </table>
+    </div>
+    
+
+
 {% endblock %}
 
 {% block js %}
