@@ -71,7 +71,12 @@
       <tbody>
         {% for data in stockDetails %}
         {% if not data.pending_qty == 0 %}
-        <tr class="table-info">
+
+        {% if data.color == 'red' %}
+        <tr class="table-danger">
+          {% else %}
+          <tr class="">
+          {% endif %}
          
           <td> <span class="tableData">{{data.order.customer_name}}</span></td>
           <td> <span class="tableData">{{data.order.sales_order}}</span></td>
@@ -188,7 +193,7 @@
 
 
           </span></td>
-          <td><span class="tableData"><a href="" class="btn btn-primary">See Complete Details</a></span></td>
+          <td><span class="tableData"><a href="{% url 'stockRequirementDetails' consoleName=consoleName id=data.id %}" class="btn btn-primary">Details</a></span></td>
           
   
         </tr>

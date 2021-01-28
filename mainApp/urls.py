@@ -24,6 +24,8 @@ urlpatterns = [
 
     # For Production Console
     path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
+    path('dashboard/<consoleName>/order/comment/',views.newComment,name='newComment'),
+    path('dashboard/<consoleName>/manage/inevntory/',views.manageInventory,name='manageInventory'),
 
 
     path('dashboard/<consoleName>/order/dispatch/<int:orderId>/',views.orderDispatch,name='orderDispatch'),
@@ -36,6 +38,9 @@ urlpatterns = [
     path('dashboard/<consoleName>/provisional/schedule/final/',views.finalProvisionalSchedule,name='finalProvisionalSchedule'),
 
     path('dashboard/<consoleName>/order/history/',views.orderHistory,name='orderHistory'),
+    
+    path('export/order/history/',views.exportOrderHistory,name='exportOrderHistory'),
+
     path('dashboard/<consoleName>/order/cancel/',views.orderCancel,name='orderCancel'),
     path('dashboard/<consoleName>/order/update/payment/status/',views.orderUpdatePaymentStatus,name='orderUpdatePaymentStatus'),
     path('dashboard/<consoleName>/order/update/order/type/',views.orderUpdateType,name='orderUpdateType'),
@@ -45,6 +50,7 @@ urlpatterns = [
      # For Warehouse Console
     path('dashboard/<consoleName>/inventory/details/',views.warehouseInventory,name='warehouseInventory'),
     path('dashboard/<consoleName>/inventory/requirement/',views.stockRequirement,name='stockRequirement'),
+    path('dashboard/<consoleName>/inventory/requirement/details/<int:id>/',views.stockRequirementDetails,name='stockRequirementDetails'),
     path('dashboard/<consoleName>/update/inventory/requirement/',views.updateStockRequirement,name='updateStockRequirement'),
     path('dashboard/<consoleName>/upload/stock/requirement/recieved/',views.uploadStockRequirement,name='uploadStockRequirement'),
     path('dashboard/<consoleName>/inventory/upload/',views.warehouseInventoryUpload,name='warehouseInventoryUpload'),

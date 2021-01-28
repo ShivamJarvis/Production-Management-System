@@ -1,5 +1,5 @@
 {% extends 'pms/dashboard_base.html' %}
-{% block warehouse_inventory %}active{% endblock %}
+{% block manage_inventory %}active{% endblock %}
 
 {% block css %}
 
@@ -8,44 +8,9 @@
 
 {% block content %}
 
-<h1 class="mb-4">Inventory</h1>
-<div class="some-buttons">
-    <!-- Order Upload Button -->
-    <!-- Button trigger modal -->
-<button type="button" class="btn btn-primary mr-3" data-bs-toggle="modal" data-bs-target="#InventoryModal">
-    Upload Inventory
-  </button>
-  
-  <!-- Modal -->
-  <div class="modal fade" id="InventoryModal" tabindex="-1" aria-labelledby="InventoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="InventoryModalLabel">Upload Inventory File</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <h3>
-              <form action="{% url 'warehouseInventoryUpload' consoleName=consoleName %}" method="POST" enctype="multipart/form-data">
-                  {% csrf_token %}
-                <div class="mb-3">
-                    <label for="formFile" class="form-label">Upload Inventory File in Excel Format</label>
-                    <input class="form-control" name="inventory_file" type="file" id="formFile" required>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Upload</button>
-              </form>
-          </h3>
-        </div>
-        <div class="modal-footer">
+<h1 class="mb-4">Manage Inventory</h1>
 
-          <a href="" class="btn btn-danger">Cancel</a>
-        </div>
-      </div>
-    </div>
-  </div>
-  <!-- Order Upload Button End -->
-
-
+<div class="">
   <a href="{% url 'exportInventoryExcel' %}" class="btn btn-info">Export Excel</a>
 
 </div>
@@ -59,8 +24,10 @@
           <th scope="col">Issued/Dispatched Quantity</th>
 
           <th scope="col">Balance Quantity</th>
+          <th scope="col">Add/Issue</th>
         </tr>
         <tr>
+          <td></td>
           <td></td>
           <td></td>
           <td></td>
@@ -69,7 +36,7 @@
         </tr>
       </thead>
       <tbody>
-        {% for data in inventoryData %}
+        {% for data in inventory %}
         <tr class="table-info">
          
           <td> <span class="tableData">{{data.item_code}}</span></td>
@@ -78,6 +45,54 @@
           <td> <span class="tableData">{{data.issued_dispatched_qty}}</span></td>
 
           <td><span class="tableData">{{data.balanced_qty}}</span></td>
+          
+          
+          
+          <td><span class="tableData">
+
+
+            <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{data.id}}">
+    <i class="fas fa-edit"></i>
+  </button>
+  
+  <!-- Modal -->
+  <div class="modal fade" id="staticBackdrop{{data.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel{{data.id}}" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="staticBackdropLabel{{data.id}}">Item Code : {{data.item_code}}</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form action="{% url 'manageInventory' consoleName=consoleName %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" value="{{data.id}}" name="id">
+            <div class="mb-3">
+                <label for="add" class="form-label">Add Quantity</label>
+                <input type="number" class="form-control" name="add" value="0" id="add" min="0">
+            </div>
+        
+            <div class="mb-3">
+                <label for="issue" class="form-label">Issue Quantity</label>
+                <input type="number" class="form-control" id="issue" name="issue" value="0" min="0" max="{{data.balanced_qty}}">
+            </div>
+
+            <button type="submit" class="btn btn-info">Add / Issue</button>
+
+
+
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+     
+        </div>
+      </div>
+    </div>
+  </div>
+
+          </span></td>
           
   
         </tr>
@@ -141,7 +156,7 @@ $(document).ready(function() {
 		columnDefs: [
 			{
 				searchable: false,
-				targets: [1,2,3,4]
+				targets: [1,2,3,4,5]
 			}
 		],
 		initComplete: function() {

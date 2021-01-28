@@ -85,6 +85,7 @@ class StockRequirement(models.Model):
     latest_stock_inward_actual_date = models.DateField(null=True,blank=True)
     recieved_qty = models.IntegerField(null=True,blank=True)
     pending_qty = models.IntegerField(null=True,blank=True)
+    color = models.CharField(max_length=20,null=True,blank=True)
     def __str__(self):
         return self.order.customer_name
 
@@ -121,7 +122,15 @@ class ProvisionalSchedule(models.Model):
     is_canceled = models.BooleanField(default=False)
     is_material_required = models.BooleanField(default=False)
     from_inventory = models.BooleanField(default=False)
+    color = models.CharField(max_length=20,null=True,blank=True)
     def __str__(self):
         return str(self.id)+". "+self.order.sales_order
+
+
+class Comment(models.Model):
+    comment = models.CharField(max_length=1000)
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="user_details")
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="order_details")
+    created_on = models.DateTimeField(auto_now_add=True)
 
 

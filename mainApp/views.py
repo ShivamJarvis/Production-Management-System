@@ -2,12 +2,12 @@ from io import BytesIO
 from django.shortcuts import redirect, render,HttpResponse
 from django.contrib.auth import login,logout,authenticate
 from django.contrib.auth.decorators import login_required
-from mainApp.models import Inventory, Job, Order, ProvisionalSchedule, Supplier, UserData, StockRequirement
+from mainApp.models import Comment, Inventory, Job, Order, ProvisionalSchedule, Supplier, UserData, StockRequirement
 import pandas as pd
 import xlsxwriter
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth.models import User
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 # Create your views here.
 def handleLogin(request):
     if request.user.username:
@@ -423,7 +423,6 @@ def orderSummary(request,consoleName):
     }
     return render(request,'pms/order_summary.html',context)
 
-
 @login_required(login_url='login')
 def provisionalSchedule(request,consoleName):
     user = request.user
@@ -433,18 +432,23 @@ def provisionalSchedule(request,consoleName):
             return redirect('consoles')
     provisionalSchedules = ProvisionalSchedule.objects.all()
     for data in provisionalSchedules:
+        if date.today()  > data.provision_date + timedelta(7) :
+            data.color = 'red'
+            data.save()
+        else:
+            data.color = ''
+            data.save()
         stockRequirement = StockRequirement.objects.filter(order=data.order).first()
         if stockRequirement:
             if stockRequirement.pending_qty < data.qty:
                 data.is_material_required = False
                 data.save()
+    
     context = {
         'consoleName':consoleName,
-        'provisionalSchedule':provisionalSchedules
+        'provisionalSchedule':provisionalSchedules,
     }
     return render(request,'pms/provisional_schedule.html',context)
-
-
 
 @login_required(login_url='login')
 def orderHistory(request,consoleName):
@@ -460,7 +464,6 @@ def orderHistory(request,consoleName):
         'orderData':orderData
     }
     return render(request,'pms/order_history.html',context)
-
 
 @login_required(login_url='login')
 def orderUpload(request,consoleName):
@@ -720,6 +723,11 @@ def stockRequirement(request,consoleName):
         if not user.permission == consoleName:
             return redirect('consoles')
     stockDetails = StockRequirement.objects.all()
+    for data in stockDetails:
+        if data.stock_inward_estimate_date:
+            if data.stock_inward_estimate_date < date.today():
+                data.color = 'red'
+                data.save()
     suppliers = Supplier.objects.all()
     context = {
         'consoleName':consoleName,
@@ -727,6 +735,17 @@ def stockRequirement(request,consoleName):
         'suppliers':suppliers
     }
     return render(request,'pms/stock_requirement.html',context)
+
+
+def stockRequirementDetails(request,consoleName,id):
+    stock = StockRequirement.objects.filter(id=id).first()
+    context = {
+        'id':id,
+        'consoleName':consoleName,
+        'stock':stock
+    }
+    return render(request,'pms/stock_requirement_detail.html',context)
+
 
 @login_required(login_url='login')
 def addSupplier(request,consoleName):
@@ -748,7 +767,6 @@ def addSupplier(request,consoleName):
         'consoleName':consoleName
     }
     return render(request,'pms/add_supplier.html',context)
-
 
 @login_required(login_url='login')
 def updateStockRequirement(request,consoleName):
@@ -850,7 +868,11 @@ def orderDispatch(request,consoleName,orderId):
             else:
                 id = len(allJob)+1
             id = "000/"+str(id)+"/"+order.order_type
-            newJob = Job(job_id = id, order=order,department="Packaging",qty=qty,date=date.today())
+            if order.order_type == 'Direct':
+                finish_type = "Direct"
+            else:
+                finish_type = order.item_code[-2:]
+            newJob = Job(job_id = id, order=order,department="Packaging",qty=qty,date=date.today(),finish_type=finish_type)
             newJob.save()
         return redirect('orderSummary',consoleName)
     stockRequirement = StockRequirement.objects.filter(order=order).first()
@@ -887,6 +909,7 @@ def orderCancel(request,consoleName):
                 stock.delete()
             except:
                 pass
+            order.completed = True
             order.save()
     return redirect('orderSummary',consoleName)
 
@@ -970,7 +993,7 @@ def orderSchedule(request,consoleName,orderId):
             else:
                 id = len(allJob)+1
             id = "000/"+str(id)+"/"+order.order_type
-            newJob = Job(job_id=id,order=order,department='Production',qty=qty,date=date.today())
+            newJob = Job(job_id=id,order=order,department='Production',qty=qty,date=date.today(),finish_type=order.item_code[-2:])
             newJob.save()
             stock = StockRequirement.objects.filter(order=order).first()
             stock_required=False
@@ -1207,6 +1230,7 @@ def completePackagingOrders(request,consoleName):
     return redirect('packagingOrders',consoleName)
 
 def updateProvisionalSchedule(request,consoleName):
+
     if request.method == 'POST':
         qty = int(request.POST['qty'])
         date = request.POST['date']
@@ -1228,3 +1252,73 @@ def updateProvisionalSchedule(request,consoleName):
                 inventory.balanced_qty = (inventory.opening_qty + inventory.added_qty)
                 inventory.save()
     return redirect('provisionalSchedule',consoleName)
+
+
+def exportOrderHistory(request):
+    output = BytesIO()
+    workbook = xlsxwriter.Workbook(output)
+    worksheet = workbook.add_worksheet()
+    format = workbook.add_format({'num_format': 'dd/mm/yy'})
+    worksheet.write('A1', 'Customer Name')
+    worksheet.write('B1', 'Sales Order')
+    worksheet.write('C1', 'Order Date')
+    worksheet.write('D1', 'Item Code')
+    worksheet.write('E1', 'Order Qty')
+    worksheet.write('F1', 'Order Type')
+    worksheet.write('G1', 'Order Date')
+    worksheet.write('H1', 'Delivery Date')
+    worksheet.write('I1', 'Status')
+
+    col = ['A','B','C','D','E','F','G','H','I']
+    rowNo = 1
+    allData = Order.objects.filter(completed=True).all().values_list('customer_name','sales_order','order_date','item_code','order_qty','order_type','order_date','item_delivery_date','status')
+
+    for data in allData:
+        rowNo+=1
+        for row in range(len(data)):
+            worksheet.write(str(col[row]+str(rowNo)),str(data[row]),format)
+    workbook.close()
+
+    workbook.close()
+
+    response = HttpResponse(content_type='application/vnd.ms-excel')
+
+    # tell the browser what the file is named
+    response['Content-Disposition'] = 'attachment;filename="order_history.xlsx"'
+
+    # put the spreadsheet data into the response
+    response.write(output.getvalue())
+
+    # return the response
+    return response
+
+
+def manageInventory(request,consoleName):
+    if request.method == 'POST':
+        add = int(request.POST['add'])
+        issue = int(request.POST['issue'])
+        id = request.POST['id']
+        inventory = Inventory.objects.filter(id=id).first()
+        inventory.opening_qty = inventory.balanced_qty
+        inventory.added_qty = add
+        inventory.issued_dispatched_qty = issue
+        inventory.balanced_qty = (inventory.opening_qty+inventory.added_qty) - inventory.issued_dispatched_qty
+        inventory.save()
+        return redirect('manageInventory',consoleName)
+    inventory = Inventory.objects.all()
+    context = {
+        'consoleName':consoleName,
+        'inventory':inventory
+    }
+    return render(request,'pms/manage_inventory.html',context)
+
+
+def newComment(request,consoleName):
+    if request.method == 'POST':
+        id = request.POST['id']
+        order = Order.objects.filter(id=int(id)).first()
+        order.remarks = request.POST['comment']
+        order.save()
+        comment = Comment(comment=order.remarks,user=request.user,order=order)
+        comment.save()
+    return redirect('orderSummary',consoleName)

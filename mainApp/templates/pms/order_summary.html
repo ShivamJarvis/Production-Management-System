@@ -159,7 +159,7 @@
           <tr class="table-danger">
           {% elif data.total_processed_qty == 0  %}
           <tr class="">
-          {% elif data.total_processed_qty > 0 and data.remaining_days_delivery > 0 %}
+          {% elif data.total_processed_qty > 0 and data.remaining_days_delivery >= 0 %}
             <tr class="table-warning">
           {% endif %}
 
@@ -439,7 +439,16 @@
             <strong>Remarks</strong>
           </div>
           <div class="col-6 mb-3">
-            {{data.remarks}}
+            <form action="{% url 'newComment' consoleName=consoleName %}" method="POST">
+              {% csrf_token %}
+              <input type="hidden" name="id" value="{{data.id}}">
+              {% if data.remarks %}
+              <textarea name="comment" id="comment{{data.id}}" cols="30" rows="10" class="form-control">{{data.remarks}}</textarea>
+              {% else %}
+              <textarea name="comment" id="comment{{data.id}}" cols="30" rows="10" class="form-control"></textarea>
+              {% endif %}
+              <button type="submit" class="btn btn-success">Submit</button>
+            </form>
           </div>
 
 
@@ -451,7 +460,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        <button type="button" class="btn btn-primary">Understood</button>
+
       </div>
     </div>
   </div>
@@ -524,9 +533,90 @@
                         <h5>{{data.inventory.balanced_qty}}</h5>
                       </div>
                       <hr>
+                  
+
+                    <div class="row text-center">
+                      <div class="col-6">
+                        <h5>
+                           <strong> Payment Status : </strong>
+                        </h5>
+                      </div>
+                      <div class="col-6">
+                        {% if data.payment_staus %}
+                        <h5>{{data.payment_staus}}</h5>
+                        {% else %}
+                        <h5>Not Declared</h5>
+                        {% endif %}
+                      </div>
+                      </div>
+                      <hr>
+
+                   
                       <div class="col-6">
                         {% if not data.inventory.balanced_qty == 0  and data.payment_staus == 'Approved' and data.order_qty > data.total_processed_qty and data.for_dispatch > 0 %}
-                        <a href="{% url 'orderDispatch' consoleName=consoleName orderId=data.id %}" class="btn btn-info">Dispatch Order</a>
+                        <!-- <a href="{% url 'orderDispatch' consoleName=consoleName orderId=data.id %}" class="btn btn-info">Dispatch Order</a> -->
+                        <!-- Button trigger modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdropdispatch{{data.id}}">
+                          Dispatch
+                        </button>
+
+                        <!-- Modal -->
+                        <div class="modal fade" id="staticBackdropdispatch{{data.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabeldispatch{{data.id}}" aria-hidden="true">
+                          <div class="modal-dialog">
+                            <div class="modal-content">
+                              <div class="modal-header">
+                                <h5 class="modal-title" id="staticBackdropLabeldispatch{{data.id}}">Dispatch Order : {{data.sales_order}} with Item : {{data.item_code}}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                              </div>
+                              <div class="modal-body">
+                                <form action="{% url 'orderDispatch' consoleName=consoleName orderId=data.id %}" method="POST">
+                                  {% csrf_token %}
+                                  <div class="form-check mb-4">
+                                    <div class="row">
+                                      <div class="col-auto">
+                                        {% if data.for_dispatch == data.order_qty  %}
+                                        <input class="form-check-input" value="dispatchA" onclick="enableDisableQtyField()" type="radio" name="dispatch" id="dispatch1">
+                                        {% else %}
+                                        <input class="form-check-input" value="dispatchA"  type="radio" name="dispatch" disabled>
+                                        {% endif %}
+                                        <label class="form-check-label" for="dispatch1">
+                                          Dispatch Completely
+                                        </label>
+                                      </div>
+                                    </div>
+                                    
+                                 
+                                    </div>
+                                    <div class="form-check">
+                                        <div class="row">
+                                            <div class="col-auto">
+                                              <input class="form-check-input" onclick="enableDisableQtyField()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
+                                              <label class="form-check-label" for="dispatch2">
+                                                Partially Dispatch
+                                              </label>
+                                            </div>
+                                            <div class="col-auto">
+                                              {% if data.for_dispatch == 0 %}
+                                              <input type="number" min="0"   id="qty" name="qty" max="{{ data.for_dispatch }}" class="form-control" disabled>
+                                              {% else %}
+                                              <input type="number" min="1"   id="qty" name="qty" max="{{ data.for_dispatch }}" class="form-control">
+                                              {% endif %}
+                                            </div>
+                                        </div>
+                                  
+                                    </div>
+                                    <div class="mt-4">
+                                        <button type="submit" class="btn btn-primary">Dispatch</button>
+                                    </div>
+                              </form>
+                              </div>
+                              <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            
+                              </div>
+                            </div>
+                          </div>
+                        </div>
                         {% else %}
                         <a  class="btn btn-secondary" aria-disabled="true">Dispatch Order</a>
                         {% endif %}
@@ -643,7 +733,15 @@ $(document).ready(function() {
     }
    }
   
-   
+   function enableDisableQtyField(){
+        var dispatchAll = document.getElementById('dispatch1')
+        var qty = document.getElementById('qty')
+        qty.disabled = dispatchAll.checked ? true : false;
+        if(!qty.disabled){
+            qty.focus();
+        }
+    }
+
   
 
 </script>

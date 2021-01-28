@@ -130,7 +130,12 @@
           <tbody>
         {% for data in provisionalSchedule %}
         {% if not data.is_finalised and not data.is_canceled %}
-        <tr>
+        {% if data.color == 'red' %}
+        <tr class="table-danger">
+          {% else %}
+          <tr>
+          {% endif %}
+
             <td><input type="checkbox" class="form-check-input" name="schedule" value="{{data.id}}"></td>
             <td>{{data.job.job_id}}</td>
             <td>{{data.order.order_type}}</td>
@@ -145,10 +150,10 @@
             {% else %}
             <td>No</td>
             {% endif %}
-            {% if data.stock.stock_inward_estimate_date %}
+            {% if data.stock.stock_inward_estimate_date and data.is_material_required %}
             <td>{{data.stock.stock_inward_estimate_date}}</td>
             {% else %}
-            <td>Not Yet</td>
+            <td>N / A</td>
             {% endif %}
 
 

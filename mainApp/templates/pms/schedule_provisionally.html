@@ -195,6 +195,16 @@
                     <input type="date" id="date" class="form-control estimateDate"  name="date"  >
                   </div>
 
+                  {% else %}
+
+                    <div class="mb-3 col-4">
+                    <label for="qty" class="form-label">Quantity</label>
+                    <input type="number" class="form-control" name="qty"   min="0" max="{{ order.order_qty|sub:order.for_dispatch|sub:order.total_processed_qty }}" id="qty" disabled>
+                  </div>
+                  <div class="mb-3 col-4">
+                    <label for="qty" class="form-label">Date</label>
+                    <input type="date" id="date" class="form-control estimateDate"  name="date"  >
+                  </div>
 
 
                 {% endif %}

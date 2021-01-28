@@ -85,12 +85,12 @@ WSGI_APPLICATION = 'pms.wsgi.application'
 
 DATABASES = {
     'default' : {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'pms',
-        'PORT':3306,
+        'PORT':5432,
         'HOST':'localhost',
-        'USER':'root',
-        'PASSWORD':'',
+        'USER':'postgres',
+        'PASSWORD':'sakshi12',
 
     }
 }

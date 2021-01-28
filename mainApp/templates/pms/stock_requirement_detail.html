@@ -1,0 +1,139 @@
+{% extends 'pms/dashboard_base.html' %}
+
+{% block css %}
+
+
+{% endblock %}
+
+{% block content %}
+
+<h1>Stock Requirement Details</h1>
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Customer Name</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.order.customer_name}}</h4>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Sales Order No.</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.order.sales_order}}</h4>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Date Of Order</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.order.order_date}}</h4>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Item Name</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.order.description}}</h4>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Order Quantity</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.order.order_qty}}</h4>
+    </div>
+</div>
+
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Order Quantity</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.required_qty}}</h4>
+    </div>
+</div>
+
+
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Order Quantity</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.required_qty}}</h4>
+    </div>
+</div>
+
+
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Supplier Name</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.supplier_name}}</h4>
+    </div>
+</div>
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>PO Number</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.po_number}}</h4>
+    </div>
+</div>
+
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Stock Inward Estimate Date</h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.stock_inward_estimate_date}}</h4>
+    </div>
+</div>
+
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Latest Stock Inward Actual Date </h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.latest_stock_inward_actual_date}}</h4>
+    </div>
+</div>
+
+
+<div class="row mt-2">
+    <div class="col-2">
+        <h4>Pending Quantity </h4>
+    </div>
+    <div class="col-10">
+        <h4>{{stock.pending_qty}}</h4>
+    </div>
+</div>
+
+
+
+
+
+
+{% endblock %}
+
+{% block js %}
+
+
+
+{% endblock %}

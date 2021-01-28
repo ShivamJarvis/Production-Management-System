@@ -11,7 +11,11 @@
 
 <h1>Order history</h1>
 
-<div class="mt-4 container" style="overflow-x: auto;">
+<div class="some-button mt-4">
+  <a href="{% url 'exportOrderHistory' %}" class="btn btn-info">Export Excel</a>
+</div>
+
+<div class="mt-2 container" style="overflow-x: auto;">
     <table class="table table-hover mt-4" class="display nowrap" id="orderSummaryTable">
         <thead>
             <tr class="table-dark">
