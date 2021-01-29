@@ -106,7 +106,9 @@ class Job(models.Model):
     finish_type = models.CharField(max_length=300,null=True,blank=True)
     department = models.CharField(max_length=300)
     qty = models.IntegerField()
-    date = models.DateField()
+    date = models.DateField(auto_now_add=True)
+    message = models.CharField(max_length=300,null=True,blank=True)
+    status = models.BooleanField(default=True)
     def __str__(self):
         return self.job_id
 
@@ -134,3 +136,12 @@ class Comment(models.Model):
     created_on = models.DateTimeField(auto_now_add=True)
 
 
+class Transaction(models.Model):
+    tansaction_id = models.CharField(max_length=40)
+    message = models.CharField(max_length=500)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="order_data_txn",null=True,blank=True)
+    stock = models.ForeignKey(StockRequirement,on_delete=models.CASCADE,related_name="stock_data_txn",null=True,blank=True)
+    job = models.ForeignKey(Job,on_delete=models.CASCADE,related_name="job_data_txn",null=True,blank=True)
+    provision = models.ForeignKey(ProvisionalSchedule,on_delete=models.CASCADE,related_name="provision_data_txn",null=True,blank=True)
+    inventory = models.ForeignKey(Inventory,on_delete=models.CASCADE,related_name="inventory_data_txn",null=True,blank=True)
+    date = models.DateTimeField(auto_now_add=True,null=True,blank=True)

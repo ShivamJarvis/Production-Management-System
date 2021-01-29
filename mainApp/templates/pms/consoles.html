@@ -21,8 +21,18 @@
 {% endblock %}
 
 {% block body %}
-
+  
     <div class="container text-center mt-5 welcome-container text-danger">
+
+      {% if messages %}
+    {% for message in messages %}
+    
+	  <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+		{{ message }}
+		<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+	  </div>
+    {% endfor %}
+{% endif %}
         <h1 class="display-2">Welcome, {{ request.user.first_name }} {{ request.user.last_name }}</h1>
     </div>
 

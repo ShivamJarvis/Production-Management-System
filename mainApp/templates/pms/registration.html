@@ -1,8 +1,16 @@
 {% extends 'pms/dashboard_base.html' %}
 {% block registerEmployee %}active{% endblock %}
 {% block content %}
+<div class="container">
+{% if messages %}
+{% for message in messages %}
 
-
+  <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endfor %}
+{% endif %}
 <h1 class="mb-5">Register New Employee</h1>
 
 <form action="{% url 'registerEmployee' consoleName=consoleName %}" method="POST">
@@ -149,7 +157,7 @@
   </div>
 
 </form>
-
+</div>
 {% endblock %}
 
 {% block js %}

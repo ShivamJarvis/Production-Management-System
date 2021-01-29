@@ -7,113 +7,116 @@
 
 {% block content %}
 
+<div class="card">
+    <h3 class="card-header bg-dark text-white text-center">Stock Requirement Details</h3>
+    <div class="card-body">
+      <div class="row text-center">
+          <div class="col-3">
+              <h5><strong>Customer Name</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Sales Order No.</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Date Of Order</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Item Name</strong></h5>
+          </div>
+      </div>
+      <div class="row text-center mt-2">
+          <div class="col-3">
+              <h5>{{stock.order.customer_name}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.order.sales_order}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.order.order_date}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.order.description}}</h5>
+          </div>
+      </div>
+      
+      
+      <div class="row text-center mt-5">
+          <div class="col-3">
+              <h5><strong>Order Quantity</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Required Quantity</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Supplier Name</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>PO Number</strong></h5>
+          </div>
+      </div>
+      <div class="row text-center mt-2">
+          <div class="col-3">
+              <h5>{{stock.order.order_qty}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.required_qty}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.supplier_name}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.po_number}}</h5>
+          </div>
+      </div>
+
+
+      <div class="row text-center mt-5">
+          <div class="col-3">
+              <h5><strong>Stock Inward Estimate Date</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Latest Stock Inward Actual Date</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Pending Quantity</strong></h5>
+          </div>
+          <div class="col-3">
+            <a href="{% url 'stockRequirement' consoleName=consoleName %}" class="btn btn-danger btn-lg">&larr; Back</a>
+        </div>
+         
+      </div>
+      <div class="row text-center mt-2">
+          <div class="col-3">
+              <h5>{{stock.stock_inward_estimate_date}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.latest_stock_inward_actual_date}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{stock.pending_qty}}</h5>
+          </div>
+
+        
+         
+      </div>
+
+
+
+
+    </div>
+  </div>
+
+
+
+<!-- 
 <h1>Stock Requirement Details</h1>
 
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Customer Name</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.order.customer_name}}</h4>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Sales Order No.</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.order.sales_order}}</h4>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Date Of Order</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.order.order_date}}</h4>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Item Name</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.order.description}}</h4>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Order Quantity</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.order.order_qty}}</h4>
-    </div>
-</div>
-
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Order Quantity</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.required_qty}}</h4>
-    </div>
-</div>
 
 
 
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Order Quantity</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.required_qty}}</h4>
-    </div>
-</div>
 
 
 
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Supplier Name</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.supplier_name}}</h4>
-    </div>
-</div>
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>PO Number</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.po_number}}</h4>
-    </div>
-</div>
-
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Stock Inward Estimate Date</h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.stock_inward_estimate_date}}</h4>
-    </div>
-</div>
-
-
-<div class="row mt-2">
-    <div class="col-2">
-        <h4>Latest Stock Inward Actual Date </h4>
-    </div>
-    <div class="col-10">
-        <h4>{{stock.latest_stock_inward_actual_date}}</h4>
-    </div>
-</div>
 
 
 <div class="row mt-2">
@@ -124,7 +127,7 @@
         <h4>{{stock.pending_qty}}</h4>
     </div>
 </div>
-
+ -->
 
 
 

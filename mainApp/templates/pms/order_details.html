@@ -1,0 +1,310 @@
+{% extends 'pms/dashboard_base.html' %}
+
+
+{% block css %}
+
+
+
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+    <h4 class="card-header bg-dark text-light text-center">Order Details</h4>
+    <div class="card-body">
+      <div class="row text-center">
+          <div class="col-3">
+              <h5><strong>Order Type</strong></h5>
+          </div>
+          
+          <div class="col-3">
+              <h5><strong>Sales Order No.</strong></h5>
+          </div>
+          
+          <div class="col-3">
+              <h5><strong>Customer Name</strong></h5>
+          </div>
+          
+          <div class="col-3">
+              <h5><strong>Item Code</strong></h5>
+          </div>
+      </div>
+
+
+      <div class="row text-center mt-2">
+          <div class="col-3">
+            {% if data.order_type == 'Direct' %}
+            <h5>Direct</h5>
+          {% else %}
+          <form action="{% url 'orderUpdateType' consoleName=consoleName %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" value="{{data.id}}" name="id">
+            <select name="order_type" id="">
+              {% if data.order_type == 'Engineering' %}
+              <option value="Engineering" selected>Engineering</option>
+              {% else %}
+              <option value="Engineering">Engineering</option>
+              {% endif %}
+             
+              {% if data.order_type == 'Others' %}
+              <option value="Others" selected>Others</option>
+              {% else %}
+              <option value="Others">Others</option>
+              {% endif %}
+            </select>
+            <button type="submit" class="btn btn-success">Update</button>
+          </form>
+          {% endif %}
+          </div>
+
+          <div class="col-3">
+              <h5>{{data.sales_order}}</h5>
+          </div>
+
+          <div class="col-3">
+              <h5>{{data.customer_name}}</h5>
+          </div>
+
+          <div class="col-3">
+              <h5>{{data.item_code}}</h5>
+          </div>
+
+      </div>
+
+      <div class="row text-center mt-5">
+          <div class="col-3">
+              <h5><strong>Order Quantity</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Order Date</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Delivery Date</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Status</strong></h5>
+          </div>
+      </div>
+
+      <div class="row text-center">
+          <div class="col-3">
+              <h5>{{data.order_qty}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{data.order_date}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{data.item_delivery_date}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{data.status}}</h5>
+          </div>
+      </div>
+
+
+      <div class="row text-center mt-5">
+          <div class="col-3">
+              <h5><strong>Remaining Days</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Payment Status</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Total Processed Quantity</strong></h5>
+          </div>
+          <div class="col-3">
+              <h5><strong>Partially Dispatched Quantity</strong></h5>
+          </div>
+      </div>
+
+      <div class="row text-center">
+          <div class="col-3">
+              <h5>{{data.remaining_days_delivery}}</h5>
+          </div>
+          <div class="col-3">
+            <form action="{% url 'orderUpdatePaymentStatus' consoleName=consoleName %}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" value="{{data.id}}" name="id">
+                <select name="payment_status" class="" id="">
+                  <option value="">--------</option>
+                  {% if data.payment_staus == 'Approved' %}
+                  <option value="Approved" selected>Approved</option>
+                  {% else %}
+                  <option value="Approved">Approved</option>
+                  {% endif %}
+                  {% if data.payment_staus == 'Not Approved' %}
+                  <option value="Not Approved" selected>Not Approved</option>
+                  {% else %}
+                  <option value="Not Approved">Not Approved</option>
+                  {% endif %}
+                </select>
+                <input type="submit" class="btn btn-success" value="Update">
+              </form>
+          </div>
+          <div class="col-3">
+              <h5>{{data.total_processed_qty}}</h5>
+          </div>
+          <div class="col-3">
+              <h5>{{data.partially_dispatched_qty}}</h5>
+          </div>
+      </div>
+
+      <div class="row text-center mt-5">
+        <div class="col-3">
+            <h5><strong>Latest Partially Dispatch Date</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Quantity in Buffing</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Quantity in Engineering</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Quantity in Provisionally schedule</strong></h5>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-3">
+            <h5>{{data.latest_partially_dispatched_date}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.qty_in_buffing}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.qty_in_engineering}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.qty_in_provisionally_schedule}}</h5>
+        </div>
+    </div>
+
+
+    <div class="row text-center mt-5">
+        <div class="col-3">
+            <h5><strong>Quantity in Plating</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Quantity in 4S Buffing</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Quantity in Laquer</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Quantity in Packaging</strong></h5>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-3">
+            <h5>{{data.qty_in_plating}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.qty_in_4sbuffing}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.qty_in_laquer}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.qty_in_packaging}}</h5>
+        </div>
+    </div>
+
+    <div class="row text-center mt-5">
+        <div class="col-3">
+            <h5><strong>Latest Packaging date</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Total Packaged Quantity</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Cumulated Invoice Quantity</strong></h5>
+        </div>
+        <div class="col-3">
+            <h5><strong>Latest Invoice date</strong></h5>
+        </div>
+    </div>
+
+    <div class="row text-center">
+        <div class="col-3">
+            <h5>{{data.latest_packaging_date}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.total_packaged_qty}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.cumulated_invoice_qty}}</h5>
+        </div>
+        <div class="col-3">
+            <h5>{{data.latest_invoice_date}}</h5>
+        </div>
+    </div>
+
+    </div>
+  </div>
+
+  <div class="card mt-2">
+    <h5 class="card-header bg-dark text-white text-center">Related Jobs</h5>
+    <div class="card-body">
+      <div class="row text-center">
+          <div class="col-3">
+            <h5><Strong>Job ID</Strong></h5>
+          </div>
+          <div class="col-6">
+            <h5><Strong>Information</Strong></h5>
+          </div>
+          <div class="col-3">
+            <h5><Strong>Date</Strong></h5>
+          </div>
+      </div>
+      {% if jobs %}
+      {% for job in jobs %}
+      <div class="row text-center mt-2">
+          <div class="col-3">
+            <h5>{{job.job_id}}</h5>
+          </div>
+          <div class="col-6">
+            <h5>Order in {{job.department}} for {{job.qty}} Qty.</h5>
+          </div>
+          <div class="col-3">
+            <h5>{{job.date}}</h5>
+          </div>
+      </div>
+      {% endfor %}
+      {% else %}
+
+      <div class="row text-center">
+          <div class="col-12 mt-2">
+             <h3 class="text-secondary">No Job To Display</h3>
+          </div>
+      </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+
+
+  <div class="card mt-2">
+    <h4 class="card-header bg-dark text-white text-center">Remarks</h4>
+    <div class="card-body">
+        <form action="{% url 'newComment' consoleName=consoleName %}" method="POST">
+            {% csrf_token %}
+            <input type="hidden" name="id" value="{{data.id}}">
+   
+            {% if data.remarks %}
+            <textarea name="comment" id="comment{{data.id}}" cols="30" rows="10" class="form-control" required>{{data.remarks}}</textarea>
+            {% else %}
+            <textarea name="comment" id="comment{{data.id}}" cols="30" rows="3" class="form-control" required>Enter Remarks/Comment</textarea>
+            {% endif %}
+            <button type="submit" class="btn btn-success mt-2">Submit</button>
+          </form>
+    </div>
+  </div>
+
+{% endblock %}
+
+{% block js %}
+
+
+{% endblock %}

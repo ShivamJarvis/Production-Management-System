@@ -1,5 +1,5 @@
 from django.contrib import admin
-from mainApp.models import Job, ProvisionalSchedule, StockRequirement, Supplier, UserData,Order,Inventory
+from mainApp.models import Job, ProvisionalSchedule, StockRequirement, Supplier, Transaction, UserData,Order,Inventory
 # Register your models here.
 
 admin.site.register(UserData)
@@ -9,3 +9,4 @@ admin.site.register(StockRequirement)
 admin.site.register(Supplier)
 admin.site.register(Job)
 admin.site.register(ProvisionalSchedule)
+admin.site.register(Transaction)

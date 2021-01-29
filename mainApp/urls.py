@@ -24,6 +24,7 @@ urlpatterns = [
 
     # For Production Console
     path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
+    path('dashboard/<consoleName>/order/details/<int:orderId>/',views.orderDetails,name='orderDetails'),
     path('dashboard/<consoleName>/order/comment/',views.newComment,name='newComment'),
     path('dashboard/<consoleName>/manage/inevntory/',views.manageInventory,name='manageInventory'),
 
