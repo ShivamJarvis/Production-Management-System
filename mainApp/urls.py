@@ -47,9 +47,11 @@ urlpatterns = [
     path('dashboard/<consoleName>/order/update/order/type/',views.orderUpdateType,name='orderUpdateType'),
     # For Order File Upload
     path('dashboard/<consoleName>/order/upload/',views.orderUpload,name='orderUpload'),
+    path('dashboard/<consoleName>/invoice/upload/',views.invoiceUpload,name='invoiceUpload'),
 
      # For Warehouse Console
     path('dashboard/<consoleName>/inventory/details/',views.warehouseInventory,name='warehouseInventory'),
+    path('dashboard/<consoleName>/inventory/dashboard/',views.warehouseInventoryDashboard,name='warehouseInventoryDashboard'),
     path('dashboard/<consoleName>/inventory/requirement/',views.stockRequirement,name='stockRequirement'),
     path('dashboard/<consoleName>/inventory/requirement/details/<int:id>/',views.stockRequirementDetails,name='stockRequirementDetails'),
     path('dashboard/<consoleName>/update/inventory/requirement/',views.updateStockRequirement,name='updateStockRequirement'),
@@ -85,4 +87,13 @@ urlpatterns = [
     # For Packaging Department
     path('dashboard/<consoleName>/order/pack/',views.packagingOrders,name='packagingOrders'),
     path('dashboard/<consoleName>/order/pack/complete/',views.completePackagingOrders,name='completePackagingOrders'),
+
+
+    path('dashboard/<consoleName>/order/warehouse/decww3kk3/',views.warehouseOrders,name='warehouseOrders'),
+
+    path('dashboard/<consoleName>/complete/order/warehouse/decww3kk3/',views.completeWarehouseOrders,name='completeWarehouseOrders'),
+
+
+
+    
 ] 

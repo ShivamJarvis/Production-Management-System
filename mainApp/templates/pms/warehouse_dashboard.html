@@ -1,0 +1,73 @@
+{% extends 'pms/dashboard_base.html' %}
+{% block warehouseInventoryDashboard %}active{% endblock %}
+
+{% block css %}
+
+
+{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Warehouse Dashboard</h1>
+<div class="some-buttons">
+
+  <!-- Order Upload Button End -->
+  <a href="{% url 'exportStockExcel' %}" class="btn btn-info">Export Excel</a>
+
+</div>
+<div class="mt-4">
+<table class="table table-hover mt-4" id="inventoryTable">
+    <thead>
+        <tr class="table-dark">
+          <th scope="col">Customer Name</th>
+          <th scope="col">Sales Order No.</th>
+          <th scope="col">Date of Order</th>
+          <th scope="col">Item Code</th>
+          <th scope="col">Order Qty</th>
+          <th scope="col">Supplier Name</th>
+          <th scope="col">Required Qty</th>
+          <th scope="col">Recieved Qty</th>
+          <th scope="col"></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for data in stockDetails %}
+        {% if data.remaining_days <= 2 %}
+
+        {% if data.color == 'red' %}
+        <tr class="table-danger">
+          {% else %}
+          <tr class="">
+          {% endif %}
+         
+          <td> <span class="tableData">{{data.order.customer_name}}</span></td>
+          <td> <span class="tableData">{{data.order.sales_order}}</span></td>
+          <td><span class="tableData">{{data.order.order_date}}</span></td>
+          <td> <span class="tableData">{{data.item_code}}</span></td>
+          <td><span class="tableData">{{data.order.order_qty}}</span></td>
+          {% if data.supplier_name %}
+          <td><span class="tableData">{{data.supplier_name}}</span></td>
+          {% else %}
+          <td><span class="tableData">-</span></td>
+        {% endif %}
+          <td><span class="tableData">{{data.required_qty}}</span></td>
+
+          <td><span class="tableData">{{data.recieved_qty}}</span></td>
+          
+          <td><span class="tableData"><a href="{% url 'stockRequirementDetails' consoleName=consoleName id=data.id %}" class="btn btn-primary">Details</a></span></td>
+          
+  
+        </tr>
+        {% endif %}
+
+      {% endfor %}
+      
+      </tbody>
+  </table>
+</div>
+
+{% endblock %}
+
+{% block js %}
+
+{% endblock %}

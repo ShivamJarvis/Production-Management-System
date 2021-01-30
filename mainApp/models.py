@@ -72,8 +72,6 @@ class Order(models.Model):
     def __str__(self):
         return self.sales_order
 
-
-
 class StockRequirement(models.Model):
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='OrderDetails')
     item_code = models.CharField(max_length=200,null=True,blank=True)
@@ -86,6 +84,8 @@ class StockRequirement(models.Model):
     recieved_qty = models.IntegerField(null=True,blank=True)
     pending_qty = models.IntegerField(null=True,blank=True)
     color = models.CharField(max_length=20,null=True,blank=True)
+    created_on = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+    remaining_days = models.IntegerField(null=True,blank=True)
     def __str__(self):
         return self.order.customer_name
 
@@ -137,7 +137,7 @@ class Comment(models.Model):
 
 
 class Transaction(models.Model):
-    tansaction_id = models.CharField(max_length=40)
+    transaction_id = models.CharField(max_length=40)
     message = models.CharField(max_length=500)
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name="order_data_txn",null=True,blank=True)
     stock = models.ForeignKey(StockRequirement,on_delete=models.CASCADE,related_name="stock_data_txn",null=True,blank=True)
@@ -145,3 +145,12 @@ class Transaction(models.Model):
     provision = models.ForeignKey(ProvisionalSchedule,on_delete=models.CASCADE,related_name="provision_data_txn",null=True,blank=True)
     inventory = models.ForeignKey(Inventory,on_delete=models.CASCADE,related_name="inventory_data_txn",null=True,blank=True)
     date = models.DateTimeField(auto_now_add=True,null=True,blank=True)
+
+
+class Invoice(models.Model):
+    invoice_id = models.CharField(max_length=200)
+    invoice_date = models.DateField(null=True,blank=True)
+    order = models.ForeignKey(Order,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.order.sales_order

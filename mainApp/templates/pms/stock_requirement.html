@@ -48,9 +48,6 @@
   <!-- Order Upload Button End -->
   <a href="{% url 'exportStockExcel' %}" class="btn btn-info">Export Excel</a>
 
-
-  
-
 </div>
 <div class="mt-4">
 <table class="table table-hover mt-4" id="inventoryTable">
@@ -120,7 +117,7 @@
                         <input type="date" value="{{ data.stock_inward_estimate_date|date:'Y-m-d' }}" name="estimate_date" class="form-control" id="estDate">
                         {% else %}
                         <input type="date" name="estimate_date" class="form-control">
-
+                    
                         {% endif %}
                     </div>
                 </div>
@@ -164,7 +161,7 @@
                         Quantity Recieved
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
-                        <input type="number" name="qty_recieved" class="form-control" value="{{data.recieved_qty}}" min="0" max="{{data.required_qty}}">
+                        <input type="number" name="qty_recieved" class="form-control" value="{{data.recieved_qty}}" min="0">
                     </div>
                 </div>
             </div>

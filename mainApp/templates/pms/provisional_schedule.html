@@ -116,6 +116,7 @@
           <th scope="col">Item Code</th>
           <th scope="col">Order Date</th>
           <th scope="col">Delivery Date</th>
+          <th scope="col">Quantity</th>
           <th scope="col">Details</th>
           <th scope="col">Raw Material Required</th>
           <th scope="col">Estimate Date</th>
@@ -157,6 +158,7 @@
             <td>{{data.order.item_code}}</td>
             <td>{{data.order.order_date}}</td>
             <td>{{data.order.item_delivery_date}}</td>
+            <td>{{data.qty}}</td>
             <td>{{data.order.description}}</td>
             {% if data.is_material_required %}
             <td>Yes</td>

@@ -1,4 +1,5 @@
 {% extends 'pms/dashboard_base.html' %}
+{% load mathfilters %}
 
 
 {% block css %}
@@ -10,7 +11,7 @@
 {% block content %}
 
 <div class="card">
-    <h4 class="card-header bg-dark text-light text-center">Order Details</h4>
+    <h4 class="card-header bg-dark text-primary text-center" style="font-weight: bold;">Order Details</h4>
     <div class="card-body">
       <div class="row text-center">
           <div class="col-3">
@@ -243,6 +244,287 @@
     </div>
   </div>
 
+
+
+  <div class="card">
+    <h5 class="card-header bg-dark text-white text-center">Schedule/Dispatch</h5>
+    <div class="card-body">
+
+        <div class="row text-center">
+            <div class="col-4">
+                <h5><strong>Available Quantity(Ready For Dispatch)</strong></h5>
+            </div>
+            <div class="col-4">
+                <h5><strong>Available Raw Material Quantity</strong></h5>
+            </div>
+            <div class="col-4">
+                <h5><strong>Expected Raw Material Date</strong></h5>
+            </div>
+        </div>
+        {% if data.order_type == 'Direct' %}
+        <div class="row text-center">
+            <div class="col-4">
+                <h5>{{data.inventory.balanced_qty}}</h5>
+            </div>
+            <div class="col-4">
+                <h5>N / A</h5>
+            </div>
+            <div class="col-4">
+                <h5>N / A</h5>
+            </div>
+        </div>
+
+        {% else %}
+
+        <div class="row text-center">
+            <div class="col-4">
+                <h5>{{data.inventory.balanced_qty}}</h5>
+            </div>
+            <div class="col-4">
+                <h5>{{rawInventory.balanced_qty}}</h5>
+            </div>
+            <div class="col-4">
+                <h5>{{stock.stock_inward_estimate_date}}</h5>
+
+            </div>
+        </div>
+        {% endif %}
+
+        <div class="row text-center mt-5">
+            <div class="col-6">
+                {% if not data.inventory.balanced_qty == 0  and data.payment_staus == 'Approved' and data.order_qty > data.total_processed_qty and data.for_dispatch > 0 %}
+                <!-- Button trigger modal -->
+                {% if not order.for_dispatch == 0 and not data.total_processed_qty == data.order_qty %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdropdispatch{{data.id}}">
+                  Dispatch
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-secondary">
+                  Dispatch
+                </button>
+                {% endif %}
+                <!-- Modal -->
+                <div class="modal fade" id="staticBackdropdispatch{{data.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabeldispatch{{data.id}}" aria-hidden="true">
+                  <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabeldispatch{{data.id}}">Dispatch Order : {{data.sales_order}} with Item : {{data.item_code}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <form action="{% url 'orderDispatch' consoleName=consoleName orderId=data.id %}" method="POST">
+                          {% csrf_token %}
+                          <div class="form-check mb-4">
+                            <div class="row">
+                              <div class="col-auto">
+                                {% if data.for_dispatch == data.order_qty  %}
+                                <input class="form-check-input" value="dispatchA" onclick="enableDisableQtyField()" type="radio" name="dispatch" id="dispatch1">
+                                {% else %}
+                                <input class="form-check-input" value="dispatchA"  type="radio" name="dispatch" disabled>
+                                {% endif %}
+                                <label class="form-check-label" for="dispatch1">
+                                  Dispatch Completely
+                                </label>
+                              </div>
+                            </div>
+                            </div>
+                            <div class="form-check">
+                                <div class="row">
+                                    <div class="col-auto">
+                                      <input class="form-check-input" onclick="enableDisableQtyField()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
+                                      <label class="form-check-label" for="dispatch2">
+                                        Partially Dispatch
+                                      </label>
+                                    </div>
+                                    <div class="col-auto">
+                                      {% if data.for_dispatch == 0 %}
+                                      <input type="number" min="0"   id="qty" name="qty" max="{{ data.for_dispatch }}" class="form-control" disabled>
+                                      {% else %}
+                                      <input type="number" min="1"   id="qty" name="qty" max="{{ data.for_dispatch }}" class="form-control">
+                                      {% endif %}
+                                    </div>
+                                </div>
+                          
+                            </div>
+                            <div class="mt-4">
+                                <button type="submit" class="btn btn-primary">Dispatch</button>
+                            </div>
+                      </form>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% else %}
+                <a  class="btn btn-secondary" aria-disabled="true">Dispatch Order</a>
+                {% endif %}
+            </div>
+            <div class="col-6">
+
+                <!-- Button trigger modal -->
+                {% if not data.for_dispatch == data.order_qty and not data.total_processed_qty == data.order_qty and data.payment_staus == 'Approved' %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop">
+                    Provisional Schedule
+                </button>
+                {% else %}
+                <button type="button" class="btn btn-secondary">
+                  Provisional Schedule
+              </button>
+                {% endif %}
+                
+                <!-- Modal -->
+                <div class="modal fade" id="staticBackdrop" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                        <h5 class="modal-title" id="staticBackdropLabel">Sales Order {{data.sales_order}}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          {% if data.order_type == 'Others'  %}
+                            {% if not data.total_processed_qty == data.order_qty and not data.for_dispatch == data.order_qty %}
+                            <form action="{% url 'orderSchedule' consoleName=consoleName orderId=data.id %}" method="post">
+                                {% csrf_token %}
+                                {% if rawInventory.balanced_qty >= data.order_qty and not rawStock %}
+                                <div class="mb-3 ">
+                                    <label for="qty" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" name="qty"  min="0" max="{{ data.order_qty }}" id="qty" required>
+                                  </div>
+                                  <div class="mb-3 ">
+                                    <label for="qty" class="form-label">Date</label>
+                                    <input type="date" class="form-control inspectionDate" name="date" required >
+                                  </div>
+                                {% elif rawInventory.balanced_qty <= data.order_qty and not rawStock.stock_inward_estimate_date %}
+                                    <div class="mb-3">
+                                      <label for="qty" class="form-label">Quantity</label>
+                                      {% if not rawInventory.balanced_qty == 0 %}
+                                      <input type="number" class="form-control" name="qty"  min="0" max="{{ rawInventory.balanced_qty }}" id="qty" required>
+                                      {% else %}
+                                      <input type="number" class="form-control" name="qty"  min="0" max="{{ rawInventory.balanced_qty }}" id="qty" disabled>
+                                      {% endif %}
+                                    </div>
+                                    <div class="mb-3 ">
+                                      <label for="qty" class="form-label">Date</label>
+                                      {% if not rawInventory.balanced_qty == 0 %}
+                                      <input type="date" class="form-control inspectionDate" name="date"  required>
+                                      {% else %}
+                                      <input type="date" class="form-control inspectionDate" name="date"   >
+                                      {% endif %}
+                                    </div>
+                                    {% elif rawInventory.balanced_qty <= data.order_qty and rawStock.stock_inward_estimate_date %}
+                    
+                                    <div class="mb-3">
+                                        <label for="qty" class="form-label">Quantity</label>
+                                        <input type="number" class="form-control" name="qty"   min="0" max="{{ data.order_qty|sub:data.for_dispatch|sub:data.total_processed_qty }}" id="qty" required>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label for="qty" class="form-label">Date</label>
+                                        <input type="date" id="date" class="form-control estimateDate"  name="date" required>
+                                      </div>
+                    
+                                      {% else %}
+                    
+                                        <div class="mb-3">
+                                        <label for="qty" class="form-label">Quantity</label>
+                                        <input type="number" class="form-control" name="qty"   min="0" max="{{ data.order_qty|sub:data.for_dispatch|sub:data.total_processed_qty }}" id="qty" disabled>
+                                      </div>
+                                      <div class="mb-3">
+                                        <label for="qty" class="form-label">Date</label>
+                                        <input type="date" id="date" class="form-control estimateDate"  name="date"  >
+                                      </div>
+                    
+                    
+                                    {% endif %}
+                                    <button type="submit" class="btn btn-primary">Submit</button>            
+                              
+                            </form>
+                            {% else %}
+                            
+                            
+                            {% endif %}
+
+                            {% elif data.order_type == 'Direct' %}
+
+                            <form action="{% url 'orderSchedule' consoleName=consoleName orderId=data.id %}" method="post">
+                              {% csrf_token %}
+
+                              {% if data.inventory.balanced_qty >= data.order_qty %}
+                              <div class="mb-3">
+                                <label for="qty" class="form-label">Quantity</label>
+                                <input type="number" class="form-control" name="qty"  min="0" max="{{ data.inventory.balanced_qty|sub:data.total_processed_qty }}" id="qty" required>
+                              </div>
+                              <div class="mb-3 ">
+                                <label for="qty" class="form-label">Date</label>
+                                <input type="date" class="form-control inspectionDate" name="date" required>
+                              </div>
+                              {% elif data.inventory.balanced_qty <= data.order_qty and not stock.stock_inward_estimate_date %}
+                              {% if data.inventory.balanced_qty <= 0 %}
+                                  <div class="mb-3">
+                                    <label for="qty" class="form-label">Quantity</label>
+                                    <input type="number" class="form-control" name="qty"  min="0" max="{{ data.inventory.balanced_qty }}" id="qty" disabled>
+                                  </div>
+                                  <div class="mb-3 ">
+                                    <label for="qty" class="form-label">Date</label>
+                                    <input type="date" class="form-control inspectionDate" name="date" disabled>
+                                  </div>
+                                  {% else %}
+                                  <div class="mb-3">
+                                    <label for="qty" class="form-label">Quantity</label>
+                                  <input type="number" class="form-control" name="qty"  min="0" max="1" id="qty" required>
+                                  </div>
+                                  <div class="mb-3 ">
+                                    <label for="qty" class="form-label">Date</label>
+                                    <input type="date" class="form-control inspectionDate" name="date"  required>
+                                  </div>
+                                  {% endif %}
+                                  
+                                  {% elif data.inventory.balanced_qty <= data.order_qty and stock.stock_inward_estimate_date %}
+                  
+                                  <div class="mb-3">
+                                      <label for="qty" class="form-label">Quantity</label>
+                                      <input type="number" class="form-control" name="qty"   min="0" max="{{ data.order_qty|sub:data.for_dispatch|sub:data.total_processed_qty }}" id="qty" required>
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="qty" class="form-label">Date</label>
+                                      <input type="date" id="date" class="form-control estimateDate"  name="date" required>
+                                    </div>
+                  
+                                    {% else %}
+                  
+                                      <div class="mb-3">
+                                      <label for="qty" class="form-label">Quantity</label>
+                                      <input type="number" class="form-control" name="qty"   min="0" max="{{ data.order_qty|sub:data.for_dispatch|sub:data.total_processed_qty }}" id="qty" disabled>
+                                    </div>
+                                    <div class="mb-3">
+                                      <label for="qty" class="form-label">Date</label>
+                                      <input type="date" id="date" class="form-control estimateDate"  name="date"  >
+                                    </div>
+                  
+                  
+                                  {% endif %}
+                                  <button type="submit" class="btn btn-primary">Submit</button>            
+                            
+                          </form>
+
+
+
+                            {% endif %}
+                        </div>
+                        <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+  </div>
+
+
+
   <div class="card mt-2">
     <h5 class="card-header bg-dark text-white text-center">Related Jobs</h5>
     <div class="card-body">
@@ -286,11 +568,53 @@
 
 
   <div class="card mt-2">
+    <h5 class="card-header bg-dark text-white text-center">Related Transactions</h5>
+    <div class="card-body">
+      <div class="row text-center">
+          <div class="col-3">
+            <h5><Strong>Transaction ID</Strong></h5>
+          </div>
+          <div class="col-6">
+            <h5><Strong>Information</Strong></h5>
+          </div>
+          <div class="col-3">
+            <h5><Strong>Date</Strong></h5>
+          </div>
+      </div>
+      {% if transactions %}
+      {% for transaction in transactions %}
+      <div class="row text-center mt-2">
+          <div class="col-3">
+            <h5>{{transaction.transaction_id}}</h5>
+          </div>
+          <div class="col-6">
+            <h5>{{transaction.message}}</h5>
+          </div>
+          <div class="col-3">
+            <h5>{{transaction.date}}</h5>
+          </div>
+      </div>
+      {% endfor %}
+      {% else %}
+
+      <div class="row text-center">
+          <div class="col-12 mt-2">
+             <h3 class="text-secondary">No Job To Display</h3>
+          </div>
+      </div>
+
+      {% endif %}
+
+    </div>
+  </div>
+
+
+  <div class="card mt-2">
     <h4 class="card-header bg-dark text-white text-center">Remarks</h4>
     <div class="card-body">
         <form action="{% url 'newComment' consoleName=consoleName %}" method="POST">
             {% csrf_token %}
-            <input type="hidden" name="id" value="{{data.id}}">
+            <input type="hidden" name="id" value="{{data.id}}" required>
    
             {% if data.remarks %}
             <textarea name="comment" id="comment{{data.id}}" cols="30" rows="10" class="form-control" required>{{data.remarks}}</textarea>
@@ -306,5 +630,98 @@
 
 {% block js %}
 
+<script>
+
+    $(function() {
+      $(document).ready(function () {
+        
+       var todaysDate = new Date();
+        
+        var year = todaysDate.getFullYear(); 
+        var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)	
+      
+        var day = ("0" + todaysDate.getDate()).slice(-2);
+        day = parseInt(day)+1;
+        var maxDate = (year +"-"+ month +"-"+ day);
+    
+        try{
+          $('.inspectionDate').attr('min',maxDate);
+        }
+        catch(e){
+
+        }
+        var year1 = parseInt("{{rawStock.stock_inward_estimate_date.year}}");
+      
+        var month1 = ("0" + (parseInt("{{rawStock.stock_inward_estimate_date.month}}"))).slice(-2)
+        var day1 = ("0" + parseInt("{{rawStock.stock_inward_estimate_date.day}}")).slice(-2);
+
+            
+    
+            var maxDate1 = (year1 +"-"+ month1 +"-"+ day1);
+            $('.estimateDate').attr('min',maxDate1);
+    
+            $('#date').on("click",function(){
+              if("{{data.order_type}}" == 'Direct') {
+              if(parseInt("{{data.inventory.balanced_qty}}") >= parseInt(document.getElementById("qty").value) )
+                {
+
+                  var year = todaysDate.getFullYear();
+                    var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)
+                    var day = ("0" + todaysDate.getDate()).slice(-2);			
+                    day = parseInt(day)+1;
+                    var maxDate = (year +"-"+ month +"-"+ day);
+                    $('.estimateDate').attr('min',maxDate);
+                }
+                else{
+                    var year1 = parseInt("{{stock.stock_inward_estimate_date.year}}");
+         
+               var month1 = ("0" + (parseInt("{{stock.stock_inward_estimate_date.month}}"))).slice(-2)
+               var day1 = ("0" + parseInt("{{stock.stock_inward_estimate_date.day}}")).slice(-2);
+               var maxDate1 = (year1 +"-"+ month1 +"-"+ day1); 
+                  $('.estimateDate').attr('min',maxDate1);
+                }
+
+                }
+              else{
+
+                if(parseInt("{{rawInventory.balanced_qty}}") >= parseInt(document.getElementById("qty").value)){
+                    var year = todaysDate.getFullYear();
+                    var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)
+                    var day = ("0" + todaysDate.getDate()).slice(-2);			
+                    day = parseInt(day)+1;
+                    var maxDate = (year +"-"+ month +"-"+ day);
+                    $('.estimateDate').attr('min',maxDate);
+                }
+                else{
+                    var year1 = parseInt("{{rawStock.stock_inward_estimate_date.year}}");
+         
+               var month1 = ("0" + (parseInt("{{rawStock.stock_inward_estimate_date.month}}"))).slice(-2)
+               var day1 = ("0" + parseInt("{{rawStock.stock_inward_estimate_date.day}}")).slice(-2);
+    
+         
+    
+               var maxDate1 = (year1 +"-"+ month1 +"-"+ day1); 
+                  $('.estimateDate').attr('min',maxDate1);
+                }
+              }
+                
+            })
+    
+           
+     
+      });
+    });
+
+
+    function enableDisableQtyField(){
+        var dispatchAll = document.getElementById('dispatch1')
+        var qty = document.getElementById('qty')
+        qty.disabled = dispatchAll.checked ? true : false;
+        if(!qty.disabled){
+            qty.focus();
+        }
+    }
+    </script>
+    
 
 {% endblock %}
