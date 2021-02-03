@@ -150,7 +150,7 @@
                         Supplier Name
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
-                        <select name="supplier_name" class="form-control">
+                        <select name="supplier_name" class="form-control" required>
                             {% for supplier in suppliers %}
                             {% if data.supplier_name == supplier.name %}
                             <option value="{{data.supplier_name}}">{{data.supplier_name}}</option>
