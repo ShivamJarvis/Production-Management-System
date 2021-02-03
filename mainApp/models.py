@@ -114,7 +114,7 @@ class Job(models.Model):
 
 
 class ProvisionalSchedule(models.Model):
-    job = models.ForeignKey(Job,on_delete=models.CASCADE,related_name='job_data')
+    job = models.ForeignKey(Job,on_delete=models.CASCADE,related_name='job_data',null=True,blank=True)
     order = models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_data')
     stock = models.ForeignKey(StockRequirement,on_delete=models.CASCADE,related_name='stock_required',null=True,blank=True)
     provision_date = models.DateField()

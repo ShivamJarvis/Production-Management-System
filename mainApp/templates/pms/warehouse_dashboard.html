@@ -25,6 +25,7 @@
           <th scope="col">Item Code</th>
           <th scope="col">Order Qty</th>
           <th scope="col">Supplier Name</th>
+          <th scope="col">Remaining Days</th>
           <th scope="col">Required Qty</th>
           <th scope="col">Recieved Qty</th>
           <th scope="col"></th>
@@ -50,6 +51,7 @@
           {% else %}
           <td><span class="tableData">-</span></td>
         {% endif %}
+          <td><span class="tableData">{{data.remaining_days}}</span></td>
           <td><span class="tableData">{{data.required_qty}}</span></td>
 
           <td><span class="tableData">{{data.recieved_qty}}</span></td>

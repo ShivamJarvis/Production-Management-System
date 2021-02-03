@@ -149,12 +149,11 @@
           <td></td>
           <td></td>
 
-         
         </tr>
       </thead>
       <tbody>
         {% for data in orderData %}
-        {% if not data.qty_in_engineering == data.order_qty and not data.qty_in_buffing == data.order_qty and not data.qty_in_provisionally_schedule == data.order_qty and not data.qty_in_plating == data.order_qty and not data.qty_in_4sbuffing == data.order_qty and not data.qty_in_laquer == data.order_qty  and not data.status == 'Canceled' and not data.completed %}
+        {% if  not data.status == 'Canceled' and not data.completed %}
 
           {% if data.remaining_days_delivery < 0 %}
           <tr class="table-danger">

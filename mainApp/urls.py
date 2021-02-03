@@ -25,8 +25,10 @@ urlpatterns = [
     # For Production Console
     path('dashboard/<consoleName>/order/summary/',views.orderSummary,name='orderSummary'),
     path('dashboard/<consoleName>/order/details/<int:orderId>/',views.orderDetails,name='orderDetails'),
+    path('dashboard/<consoleName>/order/details/update/delivery/date/',views.orderUpdateDDate,name='orderUpdateDDate'),
+    path('dashboard/<consoleName>/order/details/update/delivery/date/eng/',views.enorderUpdateDDate,name='enorderUpdateDDate'),
     path('dashboard/<consoleName>/order/comment/',views.newComment,name='newComment'),
-    path('dashboard/<consoleName>/manage/inevntory/',views.manageInventory,name='manageInventory'),
+    path('dashboard/<consoleName>/manage/inventory/',views.manageInventory,name='manageInventory'),
 
 
     path('dashboard/<consoleName>/order/dispatch/<int:orderId>/',views.orderDispatch,name='orderDispatch'),
@@ -53,6 +55,7 @@ urlpatterns = [
     path('dashboard/<consoleName>/inventory/details/',views.warehouseInventory,name='warehouseInventory'),
     path('dashboard/<consoleName>/inventory/dashboard/',views.warehouseInventoryDashboard,name='warehouseInventoryDashboard'),
     path('dashboard/<consoleName>/inventory/requirement/',views.stockRequirement,name='stockRequirement'),
+    path('dashboard/<consoleName>/inventory/requirement/delete/<int:id>/',views.stockRequirementDelete,name='stockRequirementDelete'),
     path('dashboard/<consoleName>/inventory/requirement/details/<int:id>/',views.stockRequirementDetails,name='stockRequirementDetails'),
     path('dashboard/<consoleName>/update/inventory/requirement/',views.updateStockRequirement,name='updateStockRequirement'),
     path('dashboard/<consoleName>/upload/stock/requirement/recieved/',views.uploadStockRequirement,name='uploadStockRequirement'),

@@ -7,7 +7,15 @@
 {% endblock %}
 
 {% block content %}
+{% if messages %}
+{% for message in messages %}
 
+  <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endfor %}
+{% endif %}
 <h1 class="mb-4">Stock Requirement</h1>
 <div class="some-buttons">
     <!-- Order Upload Button -->
@@ -63,11 +71,12 @@
           <th scope="col">Recieved Qty</th>
           <th scope="col"></th>
           <th scope="col"></th>
+          <th scope="col"></th>
         </tr>
       </thead>
       <tbody>
         {% for data in stockDetails %}
-        {% if not data.pending_qty == 0 %}
+        {% if not data.pending_qty <= 0 %}
 
         {% if data.color == 'red' %}
         <tr class="table-danger">
@@ -192,6 +201,7 @@
           </span></td>
           <td><span class="tableData"><a href="{% url 'stockRequirementDetails' consoleName=consoleName id=data.id %}" class="btn btn-primary">Details</a></span></td>
           
+          <td><a href="{% url 'stockRequirementDelete' consoleName=consoleName id=data.id %}" class="btn btn-danger">Delete</a></td>
   
         </tr>
         {% endif %}

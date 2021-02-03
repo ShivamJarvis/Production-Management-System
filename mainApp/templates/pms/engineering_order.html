@@ -9,6 +9,17 @@
 {% block content %}
 
 
+{% if messages %}
+{% for message in messages %}
+
+  <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+    {{ message }}
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+{% endfor %}
+{% endif %}
+
+
 <h1>Orders</h1>
 
 <div class="mt-4 container" style="overflow-x: auto;">
@@ -16,33 +27,71 @@
         <thead>
             <tr class="table-dark">
               
-              <th scope="col">Job ID</th>
+              
               <th scope="col">Order Type</th>
               <th scope="col">Sales Order Number</th>
               <th scope="col">Customer Name</th>
               <th scope="col">Item Code</th>
               <th scope="col">Order Quantity</th>
-              <th scope="col">Quantity In Engineering</th>
+              
               <th scope="col">Order Date</th>
               <th scope="col">Delivery Date</th>
+              <th scope="col">Details</th>
               <th scope="col">Complete</th>
             </tr>
             
           </thead>
           <tbody>
-            {% for data in provisionalData %}
-            {% if data.order.qty_in_engineering > 0 and data.is_finalised and data.order.order_type == 'Engineering' and data.job.department == 'Engineering' %}
+            {% for data in orderData %}
+            {% if data.qty_in_engineering > 0 %}
        <tr>
-                <td>{{data.job.job_id}}</td>
-              <td> {{data.order.order_type}}</td>
-              <td> {{data.order.sales_order}}</td>
-              <td>{{data.order.customer_name}}</td>
+                
+              <td> {{data.order_type}}</td>
+              <td> {{data.sales_order}}</td>
+              <td>{{data.customer_name}}</td>
     
-              <td> {{data.order.item_code}}</td>
-              <td>{{data.order.order_qty}}</td>
-              <td>{{data.qty}}</td>
-              <td>{{data.order.order_date}}</td>
-              <td>{{data.order.item_delivery_date}}</td>
+              <td> {{data.item_code}}</td>
+              <td>{{data.order_qty}}</td>
+              
+              <td>{{data.order_date}}</td>
+              <td>{{data.item_delivery_date}}</td>
+              <td> 
+
+                <!-- Button trigger modal -->
+              <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#staticBackdrop{{data.id}}">
+                Update
+              </button>
+
+              <!-- Modal -->
+              <div class="modal fade" id="staticBackdrop{{data.id}}" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel{{data.id}}" aria-hidden="true">
+                <div class="modal-dialog">
+                  <div class="modal-content">
+                    <div class="modal-header">
+                      <h5 class="modal-title" id="staticBackdropLabel{{data.id}}">Order {{data.sales_order}}</h5>
+                      <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                      <form action="{% url 'enorderUpdateDDate' consoleName=consoleName %}" method="POST">
+
+                        {% csrf_token %}
+                        <input type="hidden" name="id" value="{{data.id}}">
+                        <label for="">Delivery Date</label>
+                        <input type="date" name="date" id="date{{data.id}}" class="form-control my-3" value="{{ data.item_delivery_date|date:'Y-m-d' }}" required>
+                        <button type="submit" class="btn btn-primary">Update</button>
+
+                      </form>
+                    </div>
+                    <div class="modal-footer">
+                      <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                 
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+
+
+              </td>
               <td>
                   
                 <form action="{% url 'completeEngineeringOrders' consoleName=consoleName %}" method="POST">
