@@ -26,13 +26,14 @@
 {% for message in messages %}
 
   <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
-    {{ message }}
+ {{ message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
 {% endfor %}
 {% endif %}
 
 <div class="card">
+ 
     <h4 class="card-header bg-dark text-primary text-center" style="font-weight: bold;">Order Details</h4>
     <div class="card-body">
       <div class="row text-center">
@@ -597,27 +598,33 @@
     <h5 class="card-header bg-dark text-white text-center">Related Transactions</h5>
     <div class="card-body">
       <div class="row text-center">
-          <div class="col-3">
+          <div class="col-2">
             <h5><Strong>Transaction ID</Strong></h5>
           </div>
           <div class="col-6">
             <h5><Strong>Information</Strong></h5>
           </div>
-          <div class="col-3">
+          <div class="col-2">
             <h5><Strong>Date</Strong></h5>
+          </div>
+          <div class="col-2">
+            <h5><Strong>Created By</Strong></h5>
           </div>
       </div>
       {% if transactions %}
       {% for transaction in transactions %}
       <div class="row mt-2">
-          <div class="col-3">
+          <div class="col-2">
             <h5>{{transaction.transaction_id}}</h5>
           </div>
           <div class="col-6">
             <h5>{{transaction.message}}</h5>
           </div>
-          <div class="col-3">
+          <div class="col-2">
             <h5>{{transaction.date}}</h5>
+          </div>
+          <div class="col-2">
+            <h5>{{transaction.user.first_name}} {{transaction.user.last_name}}</h5>
           </div>
       </div>
       {% endfor %}
@@ -660,7 +667,7 @@
           <h5>{{comment.comment}}</h5>
         </div>
         <div class="col-4">
-          <h5>{{comment.user.first_name}} {{comment.userlast_name}}</h5>
+          <h5>{{comment.user.first_name}} {{comment.user.last_name}}</h5>
         </div>
       </div>
       {% endfor %}
@@ -695,10 +702,10 @@
        var todaysDate = new Date();
         
         var year = todaysDate.getFullYear(); 
-        var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)	
+        var month = ("0" + (todaysDate.getMonth()+1)).slice(-2)	
       
         var day = ("0" + todaysDate.getDate()).slice(-2);
-        day = parseInt(day)+1;
+        
         var maxDate = (year +"-"+ month +"-"+ day);
     
         try{
@@ -721,7 +728,6 @@
               if("{{data.order_type}}" == 'Direct') {
               if(parseInt("{{data.inventory.balanced_qty}}") >= parseInt(document.getElementById("qty").value) )
                 {
-
                   var year = todaysDate.getFullYear();
                     var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)
                     var day = ("0" + todaysDate.getDate()).slice(-2);			

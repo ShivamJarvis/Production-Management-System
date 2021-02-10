@@ -145,7 +145,8 @@ class Transaction(models.Model):
     provision = models.ForeignKey(ProvisionalSchedule,on_delete=models.CASCADE,related_name="provision_data_txn",null=True,blank=True)
     inventory = models.ForeignKey(Inventory,on_delete=models.CASCADE,related_name="inventory_data_txn",null=True,blank=True)
     date = models.DateTimeField(auto_now_add=True,null=True,blank=True)
-
+    user = models.ForeignKey(User,on_delete=models.CASCADE,related_name="create_by_user",null=True,blank=True)
+    
 
 class Invoice(models.Model):
     invoice_id = models.CharField(max_length=200)

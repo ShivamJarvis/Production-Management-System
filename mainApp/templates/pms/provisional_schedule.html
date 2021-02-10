@@ -106,7 +106,7 @@
     <thead>
         <tr class="table-dark">
           <th scope="col">
-          <input type="checkbox" class="form-check-input" id="all" >
+          <input type="checkbox" onclick="enableDisableCreateFinalSchedule()" class="form-check-input"  id="all" >
           </th>
           
           <th scope="col">Job ID</th>
@@ -150,7 +150,7 @@
           <tr>
           {% endif %}
 
-            <td><input type="checkbox" class="form-check-input" name="schedule" value="{{data.id}}"></td>
+            <td><input type="checkbox" onclick="enableDisableCreateFinalSchedule()" class="form-check-input" name="schedule" value="{{data.id}}"></td>
             <td>{{data.job.job_id}}</td>
             <td>{{data.order.order_type}}</td>
             <td>{{data.order.sales_order}}</td>
@@ -234,6 +234,10 @@
       return ctx.aoColumns[this[0]].bSearchable;
     });
     
+    document.getElementById("finalScheduleModal").disabled = true
+
+  
+
     function createDropdowns(api) {
         api.columns().every(function() {
             if (this.searchable()) {
@@ -290,8 +294,16 @@
           var orders = document.getElementsByName('schedule')
           for(var order of orders){
             order.checked = this.checked;
+            if(this.checked == true){
+              document.getElementById("finalScheduleModal").disabled = false;
+            }
+            else{
+          document.getElementById("finalScheduleModal").disabled = true;
+            }
           }
        }
+
+       
     
        document.getElementById("deleteBtn").onclick = function(){
         var orders = document.getElementsByName('schedule');
@@ -313,6 +325,7 @@
             orderIds.push(order.value);
           }
         }
+        
         document.getElementById("selectJob").value = orderIds
        }
 
@@ -326,13 +339,30 @@
      var month = ("0" + (todaysDate.getMonth() + 1)).slice(-2)	// MM
    
      var day = ("0" + todaysDate.getDate()).slice(-2);	
-     day = parseInt(day)+1;
+     
 
      var minDate = (year +"-"+ month +"-"+ day); // Results in "YYYY-MM-DD" for today's date 
 
-        $('#date').attr('min',minDate)
+        $('#date').attr('min',minDate);
 
-    })
+    });
+
+
+    function enableDisableCreateFinalSchedule(){
+      var orders = document.getElementsByName('schedule');
+      for(var order of orders){
+        if(order.checked == true){
+          document.getElementById("finalScheduleModal").disabled = false
+          break;
+        }
+        else{
+          document.getElementById("finalScheduleModal").disabled = true
+          break;
+        }
+      }
+    }
+
+
        
        
       
