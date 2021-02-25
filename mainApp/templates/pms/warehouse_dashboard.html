@@ -33,7 +33,7 @@
       </thead>
       <tbody>
         {% for data in stockDetails %}
-        {% if data.remaining_days <= 2 %}
+        {% if data.remaining_days <= 2 and data.pending_qty > 0 %}
 
         {% if data.color == 'red' %}
         <tr class="table-danger">

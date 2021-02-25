@@ -43,7 +43,6 @@
           </h3>
         </div>
         <div class="modal-footer">
-
           <a href="" class="btn btn-danger">Cancel</a>
         </div>
       </div>
@@ -89,7 +88,7 @@
    
 
   <!-- Button trigger modal -->
-<button type="button" class="btn btn-info ml-3" data-bs-toggle="modal" data-bs-target="#exampleModal">
+<button type="button" class="btn btn-info ml-3" data-bs-toggle="modal" data-bs-target="#exampleModal" id="cancelOrder">
   Cancel Orders
 </button>
 
@@ -124,7 +123,7 @@
     <thead>
         <tr class="table-dark">
           <th scope="col">
-          <input type="checkbox" class="form-check-input" id="all" >
+          <input type="checkbox" onclick="enableDisableCancelOrder()" class="form-check-input" id="all">
           </th>
           <th scope="col">Order Type</th>
           <th scope="col">Sales Order Number</th>
@@ -164,7 +163,7 @@
           {% endif %}
 
           <td> <span class="tableData">
-              <input type="checkbox" class="form-check-input" name="order" value="{{data.id}}"></td>
+              <input type="checkbox" onclick="enableDisableCancelOrder()" class="form-check-input" name="order" value="{{data.id}}"></td>
           <td> {{data.order_type}}</td>
           <td> {{data.sales_order}}</td>
           <td>{{data.customer_name}}</td>
@@ -251,9 +250,16 @@ $(document).ready(function() {
 
    
     document.getElementById("all").onclick = function(){
-      var orders = document.getElementsByName('order')
+      var orders = document.getElementsByName('order');
       for(var order of orders){
         order.checked = this.checked;
+        if(this.checked == true)
+        {
+          document.getElementById("cancelOrder").disabled = false;
+        }
+        else{
+          document.getElementById("cancelOrder").disabled = true;
+        }
       }
    }
 
@@ -263,13 +269,26 @@ $(document).ready(function() {
     for(var order of orders){
       if(order.checked==true){
         orderIds.push(order.value);
-        document.getElementById("ids").value = orderIds
+        document.getElementById("ids").value = orderIds;
       }
     }
    }
+   document.getElementById("cancelOrder").disabled = true
   
-   
-  
+   function enableDisableCancelOrder(){
+      var orders = document.getElementsByName('order');
+      for(var order of orders){
+        if(order.checked == true){
+          document.getElementById("cancelOrder").disabled = false
+          break;
+        }
+        else{
+          document.getElementById("cancelOrder").disabled = true
+        }
+      }
+    }
+ 
+    
 
 </script>
 

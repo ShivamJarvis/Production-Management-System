@@ -47,17 +47,7 @@
 						</a>
 					</li>
 
-					<li class="sidebar-item {% block addSupplier %}{% endblock %}">
-						<a class="sidebar-link" href="{% url 'addSupplier' consoleName=consoleName %}">
-							<i class="far fa-address-card"></i> <span class="align-middle">Add Supplier</span>
-						</a>
-					</li>
-
-					<li class="sidebar-item {% block listSupplier %}{% endblock %}">
-						<a class="sidebar-link" href="{% url 'listSupplier' consoleName=consoleName %}">
-							<i class="fas fa-edit"></i> <span class="align-middle">Edit Supplier</span>
-						</a>
-					</li>
+					
 					{% endif %}
 
 					{% if consoleName == 'Production' %}
@@ -117,7 +107,17 @@
 						</a>
 					</li>
 
+					<li class="sidebar-item {% block addSupplier %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'addSupplier' consoleName=consoleName %}">
+							<i class="far fa-address-card"></i> <span class="align-middle">Add Supplier</span>
+						</a>
+					</li>
 
+					<li class="sidebar-item {% block listSupplier %}{% endblock %}">
+						<a class="sidebar-link" href="{% url 'listSupplier' consoleName=consoleName %}">
+							<i class="fas fa-edit"></i> <span class="align-middle">Edit Supplier</span>
+						</a>
+					</li>
 					{% endif %}
 
 					{% if consoleName == 'Buffing' %}

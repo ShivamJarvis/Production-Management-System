@@ -68,7 +68,7 @@
 
 
     <!-- Button trigger modal -->
-<button type="button" class="btn btn-danger ml-3"  data-bs-toggle="modal" data-bs-target="#staticBackdrop1">
+<button type="button" class="btn btn-danger ml-3"  data-bs-toggle="modal" data-bs-target="#staticBackdrop1" id="cancelScheduleBtn">
     Cancel Schedule
   </button>
   
@@ -235,6 +235,8 @@
     });
     
     document.getElementById("finalScheduleModal").disabled = true
+    document.getElementById("cancelScheduleBtn").disabled = true
+
 
   
 
@@ -296,9 +298,13 @@
             order.checked = this.checked;
             if(this.checked == true){
               document.getElementById("finalScheduleModal").disabled = false;
+          document.getElementById("cancelScheduleBtn").disabled = false;
+
             }
             else{
           document.getElementById("finalScheduleModal").disabled = true;
+          document.getElementById("cancelScheduleBtn").disabled = true;
+
             }
           }
        }
@@ -353,20 +359,19 @@
       for(var order of orders){
         if(order.checked == true){
           document.getElementById("finalScheduleModal").disabled = false
+          document.getElementById("cancelScheduleBtn").disabled = false
+
           break;
         }
         else{
           document.getElementById("finalScheduleModal").disabled = true
-          break;
+          document.getElementById("cancelScheduleBtn").disabled = true
+
         }
       }
     }
+   
 
-
-       
-       
-      
-    
     </script>
 
 

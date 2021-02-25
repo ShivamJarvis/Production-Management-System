@@ -123,9 +123,9 @@
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
                       {% if data.stock_inward_estimate_date %}
-                        <input type="date" value="{{ data.stock_inward_estimate_date|date:'Y-m-d' }}" name="estimate_date" class="form-control" id="estDate">
+                        <input type="date" value="{{ data.stock_inward_estimate_date|date:'Y-m-d' }}" name="estimate_date" class="form-control estDate" >
                         {% else %}
-                        <input type="date" name="estimate_date" class="form-control">
+                        <input type="date" name="estimate_date" class="form-control estDate">
                     
                         {% endif %}
                     </div>
@@ -139,7 +139,7 @@
                         Actual Delivery Date
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
-                        <input type="date" value="{{ data.latest_stock_inward_actual_date|date:'Y-m-d' }}" id="actDate" name="actual_date" class="form-control">
+                        <input type="date" value="{{ data.latest_stock_inward_actual_date|date:'Y-m-d' }}" name="actual_date" class="form-control actDate">
                     </div>
                 </div>
             </div>
@@ -231,13 +231,10 @@ $(document).ready( function () {
      var day = ("0" + todaysDate.getDate()).slice(-2);			// DD
 
       var minDate = (year +"-"+ month +"-"+ day); // Results in "YYYY-MM-DD" for today's date 
-      $('#estDate').attr('min',minDate)
-      $('#actDate').attr('min',minDate)
+      $('.estDate').attr('min',minDate)
+      $('.actDate').attr('min',minDate)
 
     } );
-
-
-    
 
 </script>
 

@@ -412,6 +412,7 @@ def orderSummary(request,consoleName):
                 if not data.item_code in itemCode:
                     itemCode.append(data.item_code)
             deliveryDate = data.item_delivery_date
+            
             remainingDaysForDelivery = deliveryDate - date.today()
             data.remaining_days_delivery = remainingDaysForDelivery.days
             completeDate =  data.completed_date
@@ -1575,7 +1576,7 @@ def completePackagingOrders(request,consoleName):
     if request.method == 'POST':
         id = request.POST['id']
         job = Job.objects.filter(id=int(id)).first()
-
+ 
         job.department = "Completed"
         job.save()
         if job.order.order_qty == job.order.qty_in_packaging:
@@ -1845,14 +1846,19 @@ def invoiceUpload(request,consoleName):
 def orderUpdateDDate(request,consoleName):
     if request.method == 'POST':
         id = request.POST['id']
-        date = request.POST['date']
+        date_r = request.POST['date']
         order = Order.objects.filter(id=id).first()
-        order.item_delivery_date = date
+        order.item_delivery_date = date_r
         order.save()
+        order_data = Order.objects.filter(id=id).all()
+        for data in order_data:
+            remainingDaysForDelivery = data.item_delivery_date - date.today()
+            data.remaining_days_delivery = remainingDaysForDelivery.days
+            data.save()
         lastTransaction = Transaction.objects.last()
-        transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Delivery Date Update to {date} for Order {order.sales_order}",order = order,user=request.user)
+        transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Delivery Date Update to {date_r} for Order {order.sales_order}",order = order,user=request.user)
         transactionForUpdateOrder.save()
-        messages.add_message(request,messages.WARNING,f"{order.sales_order} Order Delivery date Updated to {date}")
+        messages.add_message(request,messages.WARNING,f"{order.sales_order} Order Delivery date Updated to {date_r}")
      
         return redirect('orderDetails',consoleName=consoleName,orderId=id)
 
