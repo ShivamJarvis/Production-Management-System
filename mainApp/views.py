@@ -93,10 +93,13 @@ def consoles(request):
 @login_required(login_url='login')
 def dashboard(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     context = {
         'consoleName':consoleName
     }
@@ -105,10 +108,13 @@ def dashboard(request,consoleName):
 @login_required(login_url='login')
 def registerEmployee(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if(not request.user.is_superuser):
         return redirect('consoles')
     if(request.method == 'POST'):
@@ -187,10 +193,13 @@ def registerEmployee(request,consoleName):
 @login_required(login_url='login')
 def employeeDetails(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     userDetails = User.objects.filter(is_superuser=False).all()
     userDepartmentDetails = UserData.objects.filter(user__is_superuser=False).all()
 
@@ -204,10 +213,13 @@ def employeeDetails(request,consoleName):
 @login_required(login_url='login')
 def activateEmployeeDetails(request,empId,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     user = User.objects.filter(id=empId).first()
     user.is_active = True
     user.save()
@@ -216,10 +228,13 @@ def activateEmployeeDetails(request,empId,consoleName):
 @login_required(login_url='login')
 def inActivateEmployeeDetails(request,empId,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     user = User.objects.filter(id=empId).first()
     user.is_active = False
     user.save()
@@ -228,10 +243,13 @@ def inActivateEmployeeDetails(request,empId,consoleName):
 @login_required(login_url='login')
 def employeePermissions(request,consoleName,empId):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     userDetails = UserData.objects.filter(user__id=empId).all()
     user = User.objects.filter(id=empId).first()
     userCurrentPermissions = []
@@ -345,10 +363,13 @@ def employeePermissions(request,consoleName,empId):
 @login_required(login_url='login')
 def employeeDetailsWithFilter(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     userInDepartment = []
     filteredDepartmentName = ''
     if(request.method=='POST'):
@@ -393,11 +414,13 @@ def employeeDetailsWithFilter(request,consoleName):
 @login_required(login_url='login')
 def orderSummary(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
-    
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     orderData = Order.objects.all()
 
     salesOrder =[]
@@ -436,10 +459,13 @@ def orderSummary(request,consoleName):
 @login_required(login_url='login')
 def orderDetails(request,consoleName,orderId):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     order = Order.objects.filter(id=orderId).first()
     job = Job.objects.filter(order=order).all().order_by("date")
     transactions = Transaction.objects.filter(order=order).all().order_by('date')
@@ -463,10 +489,13 @@ def orderDetails(request,consoleName,orderId):
 @login_required(login_url='login')
 def provisionalSchedule(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     provisionalSchedules = ProvisionalSchedule.objects.all()
     for data in provisionalSchedules:
         if date.today()  > data.provision_date + timedelta(7) :
@@ -490,10 +519,13 @@ def provisionalSchedule(request,consoleName):
 @login_required(login_url='login')
 def orderHistory(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     orderData = Order.objects.all()
 
     context = {
@@ -506,10 +538,13 @@ def orderHistory(request,consoleName):
 def orderUpload(request,consoleName):
 
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         orderFile = request.FILES['order_file']
         fs = FileSystemStorage()
@@ -676,10 +711,13 @@ def orderUpload(request,consoleName):
 @login_required(login_url='login')
 def warehouseInventory(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     inventoryData = Inventory.objects.all()
     context = {
         'consoleName':consoleName,
@@ -690,10 +728,13 @@ def warehouseInventory(request,consoleName):
 @login_required(login_url='login')
 def warehouseInventoryUpload(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         inventoryFile = request.FILES['inventory_file']
         fs = FileSystemStorage()
@@ -796,10 +837,13 @@ def exportStockExcel(request):
 @login_required(login_url='login')
 def stockRequirement(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     stockDetails = StockRequirement.objects.all()
     for data in stockDetails:
         if data.stock_inward_estimate_date:
@@ -817,10 +861,13 @@ def stockRequirement(request,consoleName):
 @login_required(login_url='login')
 def stockRequirementDetails(request,consoleName,id):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     stock = StockRequirement.objects.filter(id=id).first()
     context = {
         'id':id,
@@ -832,10 +879,13 @@ def stockRequirementDetails(request,consoleName,id):
 @login_required(login_url='login')
 def addSupplier(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         name = request.POST['name']
         email = request.POST['email']
@@ -853,10 +903,13 @@ def addSupplier(request,consoleName):
 @login_required(login_url='login')
 def updateStockRequirement(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method=='POST':
         id = request.POST['id']
         estimate_date = request.POST['estimate_date']
@@ -904,10 +957,13 @@ def updateStockRequirement(request,consoleName):
 @login_required(login_url='login')
 def orderDispatch(request,consoleName,orderId):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     order = Order.objects.filter(id=orderId).first()
     inventory = Inventory.objects.filter(item_code=order.item_code).first()
     rawInventory = Inventory.objects.filter(item_code=order.item_code[:-2]+"RW").first()
@@ -994,10 +1050,13 @@ def orderDispatch(request,consoleName,orderId):
 @login_required(login_url='login')
 def orderUpdatePaymentStatus(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method=='POST':
         id = request.POST['id']
         order = Order.objects.filter(id=id).first()
@@ -1013,10 +1072,13 @@ def orderUpdatePaymentStatus(request,consoleName):
 @login_required(login_url='login')
 def orderCancel(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         allId = request.POST['ids']
         allId = allId.split(',')
@@ -1033,10 +1095,13 @@ def orderCancel(request,consoleName):
 @login_required(login_url='login')
 def uploadStockRequirement(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         stockRequirement = StockRequirement.objects.all()
         stockFile = request.FILES['stock_file']
@@ -1073,10 +1138,13 @@ def uploadStockRequirement(request,consoleName):
 @login_required(login_url='login')
 def listSupplier(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         supplier = Supplier.objects.filter(id=id).first()
@@ -1098,10 +1166,13 @@ def listSupplier(request,consoleName):
 @login_required(login_url='login')
 def orderSchedule(request,consoleName,orderId):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         order = Order.objects.filter(id=orderId).first()
         if order.order_type == "Others":
@@ -1191,10 +1262,13 @@ def orderSchedule(request,consoleName,orderId):
 @login_required(login_url='login')
 def deleteProvisionalSchedule(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         provsionalId = request.POST['selectedJobs'].split(',')
         for id in provsionalId:
@@ -1273,10 +1347,13 @@ def deleteProvisionalSchedule(request,consoleName):
 @login_required(login_url='login')
 def finalProvisionalSchedule(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         try:
             provisionalId = request.POST['selectedJobs'].split(',')
@@ -1347,10 +1424,13 @@ def finalProvisionalSchedule(request,consoleName):
 @login_required(login_url='login')
 def orderUpdateType(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         orderType = request.POST['order_type']
@@ -1370,10 +1450,13 @@ def orderUpdateType(request,consoleName):
 @login_required(login_url='login')
 def buffingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
         'consoleName':consoleName,
@@ -1384,10 +1467,13 @@ def buffingOrders(request,consoleName):
 @login_required(login_url='login')
 def completeBuffingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
@@ -1408,10 +1494,13 @@ def completeBuffingOrders(request,consoleName):
 @login_required(login_url='login')
 def platingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
         'consoleName':consoleName,
@@ -1422,10 +1511,13 @@ def platingOrders(request,consoleName):
 @login_required(login_url='login')
 def completePlatingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
@@ -1443,10 +1535,13 @@ def completePlatingOrders(request,consoleName):
 @login_required(login_url='login')
 def sBuffingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
         'consoleName':consoleName,
@@ -1457,10 +1552,13 @@ def sBuffingOrders(request,consoleName):
 @login_required(login_url='login')
 def complete4SBuffingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
@@ -1478,10 +1576,13 @@ def complete4SBuffingOrders(request,consoleName):
 @login_required(login_url='login')
 def laquerOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
         'consoleName':consoleName,
@@ -1492,10 +1593,13 @@ def laquerOrders(request,consoleName):
 @login_required(login_url='login')
 def completeLaquerOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         provisionalSchedule = ProvisionalSchedule.objects.filter(id=int(id)).first()
@@ -1512,10 +1616,13 @@ def completeLaquerOrders(request,consoleName):
 @login_required(login_url='login')
 def engineeringOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     orders = Order.objects.filter(order_type='Engineering').all()
     context = {
         'consoleName':consoleName,
@@ -1526,10 +1633,13 @@ def engineeringOrders(request,consoleName):
 @login_required(login_url='login')
 def completeEngineeringOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         order = Order.objects.filter(id=int(id)).first()
@@ -1555,10 +1665,13 @@ def completeEngineeringOrders(request,consoleName):
 @login_required(login_url='login')
 def packagingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     jobData = Job.objects.filter(department='Packaging').all()
     context = {
         'consoleName':consoleName,
@@ -1569,10 +1682,13 @@ def packagingOrders(request,consoleName):
 @login_required(login_url='login')
 def completePackagingOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         job = Job.objects.filter(id=int(id)).first()
@@ -1598,10 +1714,13 @@ def completePackagingOrders(request,consoleName):
 @login_required(login_url='login')
 def updateProvisionalSchedule(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         qty = int(request.POST['qty']) # Remaining Qty In Provisional Schedule
         date = request.POST['date']
@@ -1674,10 +1793,13 @@ def exportOrderHistory(request):
 @login_required(login_url='login')
 def manageInventory(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         add = int(request.POST['add'])
         issue = int(request.POST['issue'])
@@ -1702,10 +1824,13 @@ def manageInventory(request,consoleName):
 @login_required(login_url='login')
 def newComment(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         order = Order.objects.filter(id=int(id)).first()
@@ -1721,10 +1846,13 @@ def newComment(request,consoleName):
 @login_required(login_url='login')
 def warehouseInventoryDashboard(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     stockDetails = StockRequirement.objects.exclude(pending_qty=0).all()
     for data in stockDetails:
         if data.stock_inward_estimate_date:
@@ -1747,10 +1875,13 @@ def warehouseInventoryDashboard(request,consoleName):
 @login_required(login_url='login')
 def warehouseOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     jobData = Job.objects.filter(department='Warehouse').all()
     allJobData = []
     for data in jobData:
@@ -1769,10 +1900,13 @@ def warehouseOrders(request,consoleName):
 @login_required(login_url='login')
 def completeWarehouseOrders(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         job = Job.objects.filter(id=id).first()
@@ -1808,10 +1942,13 @@ def completeWarehouseOrders(request,consoleName):
 @login_required(login_url='login')
 def invoiceUpload(request,consoleName):
     user = request.user
-    userData = UserData.objects.filter(user=user).all()
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
     for user in userData:
-        if not user.permission == consoleName:
-            return redirect('consoles')
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         invoiceFile = request.FILES['invoice_file']
         fs = FileSystemStorage()
@@ -1844,6 +1981,14 @@ def invoiceUpload(request,consoleName):
 
 @login_required(login_url='login')
 def orderUpdateDDate(request,consoleName):
+    user = request.user
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
+    for user in userData:
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
         date_r = request.POST['date']
@@ -1864,21 +2009,42 @@ def orderUpdateDDate(request,consoleName):
 
 @login_required(login_url='login')
 def enorderUpdateDDate(request,consoleName):
+    user = request.user
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
+    for user in userData:
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
-        date = request.POST['date']
+        date_r = request.POST['date']
         order = Order.objects.filter(id=id).first()
-        order.item_delivery_date = date
+        order.item_delivery_date = date_r
         order.save()
+        order_data = Order.objects.filter(id=id).all()
+        for data in order_data:
+            remainingDaysForDelivery = data.item_delivery_date - date.today()
+            data.remaining_days_delivery = remainingDaysForDelivery.days
+            data.save()
         lastTransaction = Transaction.objects.last()
-        transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Delivery Date Update to {date} for Order {order.sales_order}",order = order,user=request.user)
+        transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Delivery Date Update to {date_r} for Order {order.sales_order}",order = order,user=request.user)
         transactionForUpdateOrder.save()
-        messages.add_message(request,messages.WARNING,f"{order.sales_order} Order Delivery date Updated to {date}")
+        messages.add_message(request,messages.WARNING,f"{order.sales_order} Order Delivery date Updated to {date_r}")
 
         return redirect('engineeringOrders',consoleName)
 
 @login_required(login_url='login')
 def stockRequirementDelete(request,consoleName,id):
+    user = request.user
+    flag = 0
+    userData = UserData.objects.filter(user__username=user.username).all()
+    for user in userData:
+        if user.permission == consoleName:
+            flag = 1
+    if flag == 0:
+        return redirect('consoles')
     stock = StockRequirement.objects.filter(id=id).first()
     stock.delete()
     messages.add_message(request,messages.WARNING,f"Stock Requirement Deleted Sucessfully...")
