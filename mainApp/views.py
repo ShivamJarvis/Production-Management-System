@@ -98,7 +98,7 @@ def dashboard(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     context = {
         'consoleName':consoleName
@@ -113,7 +113,7 @@ def registerEmployee(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if(not request.user.is_superuser):
         return redirect('consoles')
@@ -198,7 +198,7 @@ def employeeDetails(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     userDetails = User.objects.filter(is_superuser=False).all()
     userDepartmentDetails = UserData.objects.filter(user__is_superuser=False).all()
@@ -218,7 +218,7 @@ def activateEmployeeDetails(request,empId,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     user = User.objects.filter(id=empId).first()
     user.is_active = True
@@ -233,7 +233,7 @@ def inActivateEmployeeDetails(request,empId,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     user = User.objects.filter(id=empId).first()
     user.is_active = False
@@ -248,7 +248,7 @@ def employeePermissions(request,consoleName,empId):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     userDetails = UserData.objects.filter(user__id=empId).all()
     user = User.objects.filter(id=empId).first()
@@ -368,7 +368,7 @@ def employeeDetailsWithFilter(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     userInDepartment = []
     filteredDepartmentName = ''
@@ -419,7 +419,7 @@ def orderSummary(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     orderData = Order.objects.all()
 
@@ -464,7 +464,7 @@ def orderDetails(request,consoleName,orderId):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     order = Order.objects.filter(id=orderId).first()
     job = Job.objects.filter(order=order).all().order_by("date")
@@ -494,7 +494,7 @@ def provisionalSchedule(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     provisionalSchedules = ProvisionalSchedule.objects.all()
     for data in provisionalSchedules:
@@ -524,7 +524,7 @@ def orderHistory(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     orderData = Order.objects.all()
 
@@ -543,7 +543,7 @@ def orderUpload(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         orderFile = request.FILES['order_file']
@@ -716,7 +716,7 @@ def warehouseInventory(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     inventoryData = Inventory.objects.all()
     context = {
@@ -733,7 +733,7 @@ def warehouseInventoryUpload(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         inventoryFile = request.FILES['inventory_file']
@@ -842,7 +842,7 @@ def stockRequirement(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     stockDetails = StockRequirement.objects.all()
     for data in stockDetails:
@@ -866,7 +866,7 @@ def stockRequirementDetails(request,consoleName,id):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     stock = StockRequirement.objects.filter(id=id).first()
     context = {
@@ -884,7 +884,7 @@ def addSupplier(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         name = request.POST['name']
@@ -908,7 +908,7 @@ def updateStockRequirement(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method=='POST':
         id = request.POST['id']
@@ -962,7 +962,7 @@ def orderDispatch(request,consoleName,orderId):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     order = Order.objects.filter(id=orderId).first()
     inventory = Inventory.objects.filter(item_code=order.item_code).first()
@@ -1055,7 +1055,7 @@ def orderUpdatePaymentStatus(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method=='POST':
         id = request.POST['id']
@@ -1077,7 +1077,7 @@ def orderCancel(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         allId = request.POST['ids']
@@ -1100,7 +1100,7 @@ def uploadStockRequirement(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         stockRequirement = StockRequirement.objects.all()
@@ -1143,7 +1143,7 @@ def listSupplier(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1171,7 +1171,7 @@ def orderSchedule(request,consoleName,orderId):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         order = Order.objects.filter(id=orderId).first()
@@ -1267,7 +1267,7 @@ def deleteProvisionalSchedule(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         provsionalId = request.POST['selectedJobs'].split(',')
@@ -1352,7 +1352,7 @@ def finalProvisionalSchedule(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         try:
@@ -1429,7 +1429,7 @@ def orderUpdateType(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1455,7 +1455,7 @@ def buffingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
@@ -1472,7 +1472,7 @@ def completeBuffingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1499,7 +1499,7 @@ def platingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
@@ -1516,7 +1516,7 @@ def completePlatingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1540,7 +1540,7 @@ def sBuffingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
@@ -1557,7 +1557,7 @@ def complete4SBuffingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1581,7 +1581,7 @@ def laquerOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     provisionalData = ProvisionalSchedule.objects.all()
     context = {
@@ -1598,7 +1598,7 @@ def completeLaquerOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1621,7 +1621,7 @@ def engineeringOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     orders = Order.objects.filter(order_type='Engineering').all()
     context = {
@@ -1638,7 +1638,7 @@ def completeEngineeringOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1670,7 +1670,7 @@ def packagingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     jobData = Job.objects.filter(department='Packaging').all()
     context = {
@@ -1687,7 +1687,7 @@ def completePackagingOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1719,7 +1719,7 @@ def updateProvisionalSchedule(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         qty = int(request.POST['qty']) # Remaining Qty In Provisional Schedule
@@ -1798,7 +1798,7 @@ def manageInventory(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         add = int(request.POST['add'])
@@ -1829,7 +1829,7 @@ def newComment(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1851,7 +1851,7 @@ def warehouseInventoryDashboard(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     stockDetails = StockRequirement.objects.exclude(pending_qty=0).all()
     for data in stockDetails:
@@ -1880,7 +1880,7 @@ def warehouseOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     jobData = Job.objects.filter(department='Warehouse').all()
     allJobData = []
@@ -1905,7 +1905,7 @@ def completeWarehouseOrders(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -1947,7 +1947,7 @@ def invoiceUpload(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         invoiceFile = request.FILES['invoice_file']
@@ -1987,7 +1987,7 @@ def orderUpdateDDate(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -2015,7 +2015,7 @@ def enorderUpdateDDate(request,consoleName):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     if request.method == 'POST':
         id = request.POST['id']
@@ -2043,7 +2043,7 @@ def stockRequirementDelete(request,consoleName,id):
     for user in userData:
         if user.permission == consoleName:
             flag = 1
-    if flag == 0:
+    if flag == 0 and not request.user.is_superuser:
         return redirect('consoles')
     stock = StockRequirement.objects.filter(id=id).first()
     stock.delete()
