@@ -358,6 +358,7 @@ def employeePermissions(request,consoleName,empId):
         'userCurrentPermissions':userCurrentPermissions,
         'user':user
     }
+    messages.add_message(request,messages.WARNING,f"Permissions Updated of {user.first_name} {user.last_name}")
     return render(request,'pms/employee_permission.html',context)
 
 @login_required(login_url='login')
@@ -980,7 +981,7 @@ def orderDispatch(request,consoleName,orderId):
             qty = order.order_qty - order.total_processed_qty
             order.total_processed_qty += qty
             # order.qty_in_packaging += qty
-            order.status = 'Completed'
+            order.status = ' Dispatch Completely'
             order.completed_date = date.today()
             order.save()
             inventory = Inventory.objects.filter(item_code=order.item_code).first()
@@ -1695,17 +1696,15 @@ def completePackagingOrders(request,consoleName):
  
         job.department = "Completed"
         job.save()
-        if job.order.order_qty == job.order.qty_in_packaging:
-            job.order.total_packaged_qty = job.order.qty_in_packaging
+  
+        if not job.order.order_qty == job.order.total_packaged_qty:
+            job.order.total_packaged_qty += job.qty
+            job.order.save()
+        if job.order.order_qty == job.order.total_packaged_qty:
+            job.order.status = 'Completed'
             job.order.completed_date = date.today()
             job.order.save()
-        else:
-            job.order.total_packaged_qty += job.order.qty_in_packaging
-            job.order.save()
-        
-        if job.order.order_qty == job.order.total_processed_qty:
-            job.order.status = 'Completed'
-            job.order.save()
+
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{job.qty} is Completed",order = job.order,user=request.user)
         transactionForUpdateOrder.save()

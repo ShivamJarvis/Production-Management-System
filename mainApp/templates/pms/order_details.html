@@ -13,6 +13,7 @@
     background:#C4BFBF!important;
     font-weight: bold;
     font-size: 1rem;
+    
     }
 </style>
 
@@ -358,9 +359,9 @@
                             <div class="row">
                               <div class="col-auto">
                                 {% if data.inventory.balanced_qty >= data.order_qty  %}
-                                <input class="form-check-input" value="dispatchA" onclick="enableDisableQtyField()" type="radio" name="dispatch" id="dispatch1">
+                                <input class="form-check-input" value="dispatchA" onclick="enableDisableQtyField();enableDisableDispatchBtn();" type="radio" name="dispatch" id="dispatch1">
                                 {% else %}
-                                <input class="form-check-input" value="dispatchA"  type="radio" name="dispatch" disabled>
+                                <input class="form-check-input" value="dispatchA"   type="radio" name="dispatch" disabled>
                                 {% endif %}
                                 <label class="form-check-label" for="dispatch1">
                                   Dispatch Completely
@@ -372,9 +373,9 @@
                                 <div class="row">
                                   <div class="col-auto">
                                     {% if not data.inventory.balanced_qty < data.order_qty and data.inventory.balanced_qty == 0 %}
-                                    <input class="form-check-input" onclick="enableDisableQtyField()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" disabled>
+                                    <input class="form-check-input" onclick="enableDisableQtyField();enableDisableDispatchBtn();" value="dispatchP" type="radio" name="dispatch" id="dispatch2" disabled>
                                     {% else %}
-                                    <input class="form-check-input" onclick="enableDisableQtyField()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
+                                    <input class="form-check-input" onclick="enableDisableQtyField();enableDisableDispatchBtn();" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
                                     {% endif %}
                                     <label class="form-check-label" for="dispatch2">
                                       Partially Dispatch
@@ -391,7 +392,9 @@
                           
                             </div>
                             <div class="mt-4">
-                                <button type="submit" id="dispatchBtn" class="btn btn-primary">Dispatch</button>
+                              <button type="submit" id="dispatchBtn" class="btn btn-primary">Dispatch</button>
+                              <br>
+                              <span class="text-danger mt-3" id="dispatchMessage">You Not Selected Any Option</span>
                             </div>
                       </form>
                       </div>
@@ -803,6 +806,25 @@
       provBtn.disabled = True
     }
 
+    document.getElementById("dispatchBtn").disabled = true;
+    function enableDisableDispatchBtn()
+    {
+      var dispatchRadioButtons = document.getElementsByName('dispatch');
+      var button = document.getElementById("dispatchBtn");
+      var msg = document.getElementById("dispatchMessage");
+      for(var dispatch of dispatchRadioButtons)
+      {
+        if(dispatch.checked == true)
+        {
+          button.disabled = false;
+          msg.style.visibility = "hidden";
+          break;
+        }
+        else{
+          button.disabled = true;
+        }
+      }
+    }
 
 
 
