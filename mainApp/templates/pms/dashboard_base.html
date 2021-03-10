@@ -219,8 +219,10 @@
 			<main class="content">
 				<div class="container-fluid p-0">
 				<div class="row mb-2 mb-xl-3">
+					
 					{% block content %}
 					<div class="container text-center">
+						
 						<h1 class="">Welcome {{request.user.first_name}} {{request.user.last_name}} to {{consoleName}} Dashboard</h1>
 					</div>
 					{% endblock %}

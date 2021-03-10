@@ -26,7 +26,7 @@
 {% if messages %}
 {% for message in messages %}
 
-  <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+  <div class="alert alert-warning alert-dismissible fade show mt-3 py-3" role="alert">
  {{ message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
@@ -373,9 +373,9 @@
                                 <div class="row">
                                   <div class="col-auto">
                                     {% if not data.inventory.balanced_qty < data.order_qty and data.inventory.balanced_qty == 0 %}
-                                    <input class="form-check-input" onclick="enableDisableQtyField();enableDisableDispatchBtn();" value="dispatchP" type="radio" name="dispatch" id="dispatch2" disabled>
+                                    <input class="form-check-input" onclick="enableDisableQtyField();enableDisableDispatchBtn()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" disabled>
                                     {% else %}
-                                    <input class="form-check-input" onclick="enableDisableQtyField();enableDisableDispatchBtn();" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
+                                    <input class="form-check-input" onclick="enableDisableQtyField();enableDisableDispatchBtn()" value="dispatchP" type="radio" name="dispatch" id="dispatch2" >
                                     {% endif %}
                                     <label class="form-check-label" for="dispatch2">
                                       Partially Dispatch
@@ -383,9 +383,9 @@
                                   </div>
                                   <div class="col-auto">
                                       {% if not data.inventory.balanced_qty < data.order_qty and data.inventory.balanced_qty == 0 %}
-                                      <input type="number" min="0"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control" disabled>
+                                      <input type="number" min="0" value="0"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control" disabled>
                                       {% else %}
-                                      <input type="number" min="1"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control">
+                                      <input type="number" min="1" value="1"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control">
                                       {% endif %}
                                     </div>
                                 </div>

@@ -223,6 +223,7 @@ def activateEmployeeDetails(request,empId,consoleName):
     user = User.objects.filter(id=empId).first()
     user.is_active = True
     user.save()
+    messages.add_message(request,messages.WARNING,f"{user.first_name} {user.last_name} is now active")
     return redirect('employeeDetails',consoleName=consoleName)
 
 @login_required(login_url='login')
@@ -238,6 +239,8 @@ def inActivateEmployeeDetails(request,empId,consoleName):
     user = User.objects.filter(id=empId).first()
     user.is_active = False
     user.save()
+    
+    messages.add_message(request,messages.WARNING,f"{user.first_name} {user.last_name} is now not-active")
     return redirect('employeeDetails',consoleName=consoleName)
 
 @login_required(login_url='login')
@@ -350,6 +353,7 @@ def employeePermissions(request,consoleName,empId):
         except:
             pass
 
+        messages.add_message(request,messages.WARNING,f"Permissions Updated of {user.first_name} {user.last_name}")
         return redirect('employeePermissions',consoleName=consoleName,empId=empId)
 
     context = {
@@ -358,7 +362,6 @@ def employeePermissions(request,consoleName,empId):
         'userCurrentPermissions':userCurrentPermissions,
         'user':user
     }
-    messages.add_message(request,messages.WARNING,f"Permissions Updated of {user.first_name} {user.last_name}")
     return render(request,'pms/employee_permission.html',context)
 
 @login_required(login_url='login')
@@ -896,6 +899,8 @@ def addSupplier(request,consoleName):
         address = request.POST['address']
         newSupplier = Supplier(name=name,email=email,phone=contact,gst_no=gst,pan_no=pan,address=address)
         newSupplier.save()
+        messages.add_message(request,messages.WARNING,f"New Suplier is added successfully")
+
     context = {
         'consoleName':consoleName
     }
@@ -1156,6 +1161,8 @@ def listSupplier(request,consoleName):
         supplier.pan_no = request.POST['pan']
         supplier.address = request.POST['address']
         supplier.save()
+        messages.add_message(request,messages.WARNING,f"Details of {supplier.name} is updated")
+
 
     supplierData = Supplier.objects.all()
     context = {
@@ -1487,6 +1494,7 @@ def completeBuffingOrders(request,consoleName):
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{provisionalSchedule.job.qty} is moving to plating department",order = provisionalSchedule.order,user=request.user)
         transactionForUpdateOrder.save()
+        messages.add_message(request,messages.WARNING,f"{provisionalSchedule.job.order.order_qty} qty is processed of order {provisionalSchedule.job.order.sales_order}")
 
         
 
@@ -1530,7 +1538,7 @@ def completePlatingOrders(request,consoleName):
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{provisionalSchedule.job.qty} is moving to 4S Buffing department",order = provisionalSchedule.order,user=request.user)
         transactionForUpdateOrder.save()
-
+        messages.add_message(request,messages.WARNING,f"{provisionalSchedule.job.order.order_qty} qty is processed of order {provisionalSchedule.job.order.sales_order}")
     return redirect('buffingOrders',consoleName)
 
 @login_required(login_url='login')
@@ -1571,7 +1579,7 @@ def complete4SBuffingOrders(request,consoleName):
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{provisionalSchedule.job.qty} is moving to Laquer department",order = provisionalSchedule.order,user=request.user)
         transactionForUpdateOrder.save()
-
+        messages.add_message(request,messages.WARNING,f"{provisionalSchedule.job.order.order_qty} qty is processed of order {provisionalSchedule.job.order.sales_order}")
     return redirect('sBuffingOrders',consoleName)
 
 @login_required(login_url='login')
@@ -1612,6 +1620,8 @@ def completeLaquerOrders(request,consoleName):
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{provisionalSchedule.job.qty} is moving to Packaging department",order = provisionalSchedule.order,user=request.user)
         transactionForUpdateOrder.save()
+        messages.add_message(request,messages.WARNING,f"{provisionalSchedule.job.order.order_qty} qty is processed of order {provisionalSchedule.job.order.sales_order}")
+
     return redirect('laquerOrders',consoleName)
 
 @login_required(login_url='login')
@@ -1661,6 +1671,8 @@ def completeEngineeringOrders(request,consoleName):
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{order.order_qty} is moving to Packaging department",order = order,user=request.user)
         transactionForUpdateOrder.save()
+        messages.add_message(request,messages.WARNING,f"{order.order_qty} qty is processed of order {order.sales_order}")
+
     return redirect('engineeringOrders',consoleName)
 
 @login_required(login_url='login')
@@ -1708,6 +1720,8 @@ def completePackagingOrders(request,consoleName):
         lastTransaction = Transaction.objects.last()
         transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"{job.qty} is Completed",order = job.order,user=request.user)
         transactionForUpdateOrder.save()
+        messages.add_message(request,messages.WARNING,f"{job.qty} qty is processed of order {job.order.sales_order}")
+
     return redirect('packagingOrders',consoleName)
 
 @login_required(login_url='login')
@@ -1936,6 +1950,7 @@ def completeWarehouseOrders(request,consoleName):
                 lastTransaction = Transaction.objects.last()
                 transactionForUpdateOrder = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Order {job.order.sales_order} Moving To Packaging Department",order = job.order,user=request.user)
                 transactionForUpdateOrder.save()
+        messages.add_message(request,messages.WARNING,f"{job.qty} qty is processed of order {job.order.sales_order}")
     return redirect('warehouseOrders',consoleName)
 
 @login_required(login_url='login')
