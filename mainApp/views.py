@@ -148,7 +148,7 @@ def registerEmployee(request,consoleName):
             
 
             newUser = User.objects.create_user(first_name=firstName,last_name=lastName,username=userName,is_active=is_active,is_staff=is_staff,password=password,is_superuser=is_admin)
-            messages.add_message(request,messages.WARNING,f"New Employee Registraion is Successfully Completed")
+            messages.add_message(request,messages.WARNING,f"New Employee Registration is Successfully Completed")
 
 
             if(production=='production'):
@@ -182,6 +182,9 @@ def registerEmployee(request,consoleName):
             if(laquer=='laquer'):
                 laquer_permission = UserData(user=newUser,permission="Laquer")
                 laquer_permission.save()
+        
+        else:
+            messages.add_message(request,messages.WARNING,f"Sorry, Entered password not matched")
 
 
 
@@ -510,10 +513,16 @@ def provisionalSchedule(request,consoleName):
             data.save()
         stockRequirement = StockRequirement.objects.filter(order=data.order).first()
         if stockRequirement:
-            if stockRequirement.pending_qty < data.qty:
+            inventory = Inventory.objects.filter(item_code = stockRequirement.item_code).first()
+            if inventory.balanced_qty >= data.qty and data.is_material_required:
+                inventory.issued_dispatched_qty = data.qty
+                inventory.opening_qty = inventory.balanced_qty
+                inventory.balanced_qty -= data.qty
                 data.is_material_required = False
+                data.from_inventory = True
+                inventory.save()
                 data.save()
-    
+    provisionalSchedules = ProvisionalSchedule.objects.all()
     context = {
         'consoleName':consoleName,
         'provisionalSchedule':provisionalSchedules,
@@ -927,7 +936,6 @@ def updateStockRequirement(request,consoleName):
         message = ''
         if estimate_date:
             stock.stock_inward_estimate_date = estimate_date
-
             
         if actual_date:
             stock.latest_stock_inward_actual_date = actual_date
@@ -1190,9 +1198,9 @@ def orderSchedule(request,consoleName,orderId):
                 order.total_processed_qty += int(qty)
                 order.qty_in_provisionally_schedule += int(qty)
                 inventory = Inventory.objects.filter(item_code=order.item_code[:-2]+'RW').first()
-               
+                from_inventory = False
                 if inventory.balanced_qty < int(qty):
-                    inventory.balanced_qty = 0
+                    # inventory.balanced_qty = 0
                     inventory.save()
                 else:
                     from_inventory = True
@@ -1213,13 +1221,13 @@ def orderSchedule(request,consoleName,orderId):
                 newJob.save()
                 stock = StockRequirement.objects.filter(order=order).first()
                 stock_required=False
-                if stock:
+                if stock and not from_inventory:
                     if stock.stock_inward_estimate_date:
                         stock_required=True
                 newProvisionalSchedule = ProvisionalSchedule(job=newJob,order=order,provision_date=pDate,qty=qty,stock=stock,is_material_required=stock_required,from_inventory=from_inventory)
                 newProvisionalSchedule.save()
-                inventory.balanced_qty += inventory.added_qty 
-                inventory.save()
+                # inventory.balanced_qty += inventory.added_qty 
+                # inventory.save()
         
                 lastTransaction = Transaction.objects.last()
                 transactionForNewProvsionalSchedule = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"New Provsional Schedule created with  {qty} quantity",provision=newProvisionalSchedule,order=order,user=request.user)
@@ -1232,16 +1240,16 @@ def orderSchedule(request,consoleName,orderId):
             inventory = Inventory.objects.filter(item_code=order.item_code).first()
             from_inventory = False
             if inventory.balanced_qty < int(qty):
-                inventory.balanced_qty = 0
+                # inventory.balanced_qty = 0
                 inventory.save()
             else:
                 from_inventory = True
                 inventory.opening_qty = inventory.balanced_qty
                 inventory.issued_dispatched_qty = int(qty)
-                inventory.balanced_qty -= int(qty)
+                inventory.added_qty = 0
+                inventory.balanced_qty = (inventory.opening_qty+inventory.added_qty) - inventory.issued_dispatched_qty
                 inventory.save()
             order.save()
-            allJob = Job.objects.all()
             allJob = Job.objects.all()
             if not allJob:
                 id = 1
@@ -1258,8 +1266,9 @@ def orderSchedule(request,consoleName,orderId):
                     stock_required=True
             newProvisionalSchedule = ProvisionalSchedule(job=newJob,order=order,provision_date=pDate,qty=qty,stock=stock,is_material_required=stock_required,from_inventory=from_inventory)
             newProvisionalSchedule.save()
-            inventory.balanced_qty += inventory.added_qty 
-            inventory.save()
+
+            # inventory.balanced_qty += inventory.added_qty 
+            # inventory.save()
     
             lastTransaction = Transaction.objects.last()
             transactionForNewProvsionalSchedule = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"New Provsional Schedule created with  {qty} quantity",provision=newProvisionalSchedule,order=order,user=request.user)
@@ -1334,7 +1343,7 @@ def deleteProvisionalSchedule(request,consoleName):
                     inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code).first()
                     inventory.opening_qty = inventory.balanced_qty
                     inventory.added_qty = provisionalSchedule.qty
-                    inventory.issued_dispatched_qty -= provisionalSchedule.qty
+                    # inventory.issued_dispatched_qty -= provisionalSchedule.qty
                     inventory.balanced_qty = (inventory.opening_qty + inventory.added_qty)
                     inventory.save() 
                     provisionalSchedule.order.status = 'Pending'
@@ -1378,17 +1387,16 @@ def finalProvisionalSchedule(request,consoleName):
                     provisionalSchedule.is_finalised = True
                     provisionalSchedule.final_date = request.POST['date']
                     provisionalSchedule.save()
-                    if not provisionalSchedule.from_inventory:
-                        inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code[:-2]+'RW').first()
-                        inventory.opening_qty = inventory.balanced_qty
-                        inventory.added_qty = 0
-                        inventory.issued_dispatched_qty = provisionalSchedule.qty
-                        inventory.balanced_qty = (inventory.opening_qty+inventory.added_qty)-inventory.issued_dispatched_qty
-                        inventory.save()
-                        lastTransaction = Transaction.objects.last()
-                        transactionForDeductInventory = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Raw Inventory Deducted for order {provisionalSchedule.order.sales_order}",provision=provisionalSchedule,inventory=inventory,order=provisionalSchedule.order,user=request.user)
-                        transactionForDeductInventory.save()
-
+                    # if not provisionalSchedule.from_inventory:
+                    #     inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code[:-2]+'RW').first()
+                    #     inventory.opening_qty = inventory.balanced_qty
+                    #     inventory.added_qty = 0
+                    #     inventory.issued_dispatched_qty = provisionalSchedule.qty
+                    #     inventory.balanced_qty = (inventory.opening_qty+inventory.added_qty)-inventory.issued_dispatched_qty
+                    #     inventory.save()
+                    #     lastTransaction = Transaction.objects.last()
+                    #     transactionForDeductInventory = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Raw Inventory Deducted for order {provisionalSchedule.order.sales_order}",provision=provisionalSchedule,inventory=inventory,order=provisionalSchedule.order,user=request.user)
+                    #     transactionForDeductInventory.save()
                     provisionalSchedule.order.save()
                     provisionalSchedule.job.save()
                     lastTransaction = Transaction.objects.last()
@@ -1407,15 +1415,15 @@ def finalProvisionalSchedule(request,consoleName):
                     provisionalSchedule.save()
                     provisionalSchedule.order.save()
                     provisionalSchedule.job.save()
-                    inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code).first()
-                    inventory.opening_qty = inventory.balanced_qty
-                    inventory.added_qty = 0
-                    inventory.issued_dispatched_qty = provisionalSchedule.qty
-                    inventory.balanced_qty = (inventory.opening_qty+inventory.added_qty)-inventory.issued_dispatched_qty
-                    inventory.save()
-                    lastTransaction = Transaction.objects.last()
-                    transactionForDeductInventory = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Inventory Deducted for order {provisionalSchedule.order.sales_order}",provision=provisionalSchedule,inventory=inventory,order=provisionalSchedule.order,user=request.user)
-                    transactionForDeductInventory.save()
+                    # inventory = Inventory.objects.filter(item_code=provisionalSchedule.order.item_code).first()
+                    # inventory.opening_qty = inventory.balanced_qty
+                    # inventory.added_qty = 0
+                    # inventory.issued_dispatched_qty = provisionalSchedule.qty
+                    # inventory.balanced_qty = (inventory.opening_qty+inventory.added_qty)-inventory.issued_dispatched_qty
+                    # inventory.save()
+                    # lastTransaction = Transaction.objects.last()
+                    # transactionForDeductInventory = Transaction(transaction_id=f"txn-00{lastTransaction.id}",message=f"Inventory Deducted for order {provisionalSchedule.order.sales_order}",provision=provisionalSchedule,inventory=inventory,order=provisionalSchedule.order,user=request.user)
+                    # transactionForDeductInventory.save()
 
 
                     lastTransaction = Transaction.objects.last()

@@ -39,7 +39,7 @@
                   {% csrf_token %}
                 <div class="mb-3">
                     <label for="formFile" class="form-label">Upload Recieved Stock in Excel Format</label>
-                    <input class="form-control" name="stock_file" type="file" id="formFile">
+                    <input class="form-control" name="stock_file" type="file" id="formFile" required>
                   </div>
                   
               
@@ -123,9 +123,9 @@
                     </div>
                     <div class="col-lg-6 col-md-6 col-sm-12">
                       {% if data.stock_inward_estimate_date %}
-                        <input type="date" value="{{ data.stock_inward_estimate_date|date:'Y-m-d' }}" name="estimate_date" class="form-control estDate" >
+                        <input type="date" value="{{ data.stock_inward_estimate_date|date:'Y-m-d' }}" name="estimate_date" class="form-control estDate">
                         {% else %}
-                        <input type="date" name="estimate_date" class="form-control estDate">
+                        <input type="date" name="estimate_date" class="form-control estDate" required>
                     
                         {% endif %}
                     </div>

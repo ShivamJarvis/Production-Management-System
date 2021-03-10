@@ -385,7 +385,7 @@
                                       {% if not data.inventory.balanced_qty < data.order_qty and data.inventory.balanced_qty == 0 %}
                                       <input type="number" min="0" value="0"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control" disabled>
                                       {% else %}
-                                      <input type="number" min="1" value="1"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control">
+                                      <input type="number" min="1" value="1"   id="qty" name="qty" max="{{ data.order_qty|sub:data.total_processed_qty }}" class="form-control dispatchPQty">
                                       {% endif %}
                                     </div>
                                 </div>
@@ -394,7 +394,7 @@
                             <div class="mt-4">
                               <button type="submit" id="dispatchBtn" class="btn btn-primary">Dispatch</button>
                               <br>
-                              <span class="text-danger mt-3" id="dispatchMessage">You Not Selected Any Option</span>
+                              <span class="text-danger mt-3" id="dispatchMessage"></span>
                             </div>
                       </form>
                       </div>
